@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "agent:log": "node scripts/agent-log-summary.mjs",
+    "skills:sync": "node scripts/skills-sync.mjs",
+    "hooks:selftest": "node scripts/hooks-selftest.mjs"
   },
   "dependencies": {
     "next": "16.3.5",
