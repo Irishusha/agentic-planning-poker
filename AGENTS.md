@@ -66,3 +66,10 @@ passed.
 When reporting completion, state the exact commands you ran and their actual outcome. Never claim a check
 passed that you did not run, never soften or omit a failure, and never report partial work as complete. If
 something is incomplete, blocked, or deliberately skipped, name which part and why.
+
+## 10. Read the agent log through the summary, never raw
+
+Do not pull `.agent-log/actions.jsonl` into the context window — it grows by roughly two records per tool call
+and is mostly noise. Run `node scripts/agent-log-summary.mjs` instead; it answers the same questions in a few
+lines. A `PreToolUse` hook rewrites raw dumps and reads of that file to the summary, so an attempt to read it
+directly will not return what you asked for.

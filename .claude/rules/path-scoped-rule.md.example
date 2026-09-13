@@ -1,0 +1,19 @@
+---
+paths:
+  - "src/**"
+---
+
+# Rules for `src/**` (loaded only while working under these paths)
+
+This file is an inactive template. Copy it to a real name — `.claude/rules/<area>.md` — and change
+`paths:` and the rules to match the area you are describing. See "Path-scoped rules" in the project
+README.
+
+Keep such a file short. It is loaded whenever a matching file is touched, so every line costs context
+on every edit in that area; anything that applies to the whole repository belongs in `AGENTS.md`
+instead.
+
+- State the convention this area already follows, not the one you wish it followed.
+- A rule is worth writing only if breaking it is plausible and the cost of breaking it is real.
+- Say where a kind of code belongs, so a change lands in the right file rather than the nearest one.
+- Name the check that proves a change here is sound, and when it has to pass.

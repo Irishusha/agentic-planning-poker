@@ -13,4 +13,9 @@ Observability layer of this repo. `actions.jsonl` gets ONE JSON line per hook ev
 Fields: ts, event, id (tool_use_id), session (first 8 chars), mode (permission mode), tool, path | cmd | pattern | url, exit, ms.
 
 Read it with `pnpm agent:log` (per-tool proposed / executed / blocked / failed). Verify the hooks without an agent: `pnpm hooks:selftest`.
-The file is committed on purpose: what the agent DID lives next to what it SAID (the transcript).
+
+The raw `actions.jsonl` is local and git-ignored — it is this checkout's own history, not a shared artefact, so read it
+through `pnpm agent:log` rather than opening it. In Claude Code the `log-filter.mjs` `PreToolUse` hook enforces that:
+a raw dump (`cat`, `head`, `grep`, `type` …) is rewritten to `node scripts/agent-log-summary.mjs` and a `Read` of the
+log is redirected to `.agent-log/summary.txt`, so the file never fills the context window. This `README.md` is the only
+tracked file here.
