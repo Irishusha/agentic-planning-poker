@@ -8,8 +8,25 @@
   and must not be imported into `app/**`.
 - `spec.md` — design tokens, layouts, screen states, accessibility requirements and detailed interaction
   notes.
-- `screenshots/revealed.png` — quick visual reference for the revealed-results state; it is not a complete
-  design export.
+- `screenshots/` — static visual references for specific states, one PNG per state. They are a lookup aid,
+  not a design export: `planning-poker.html` remains the interactive visual source, and the screenshots never
+  override `docs/product-plan.md` or `design/spec.md`. Current states:
+
+  | State | File |
+  | ----- | ---- |
+  | Landing — create session | `landing-create.png` |
+  | Landing — join session | `landing-join.png` |
+  | Room — waiting, host | `room-waiting-host.png` |
+  | Room — waiting, participant | `room-waiting-participant.png` |
+  | Room — waiting, observer | `room-waiting-observer.png` |
+  | Room — voting, host | `room-voting-host.png` |
+  | Room — voting, participant | `room-voting-participant.png` |
+  | Room — voting, observer | `room-voting-observer.png` |
+  | Room — revealed, host | `room-revealed-host.png` |
+  | Room — revealed, participant | `room-revealed-participant.png` |
+
+  There is deliberately no revealed-observer screenshot: revealed results are identical for host, participant
+  and observer, so the existing two cover that state.
 - `../docs/product-plan.md` — approved MVP scope and product behaviour.
 
 ## Source precedence
@@ -18,7 +35,7 @@
 2. `design/planning-poker.html` controls visual appearance and screen composition.
 3. `design/spec.md` controls tokens, measurements, accessibility and interaction details not overridden by the
    product plan.
-4. The screenshot is reference-only.
+4. The screenshots are reference-only.
 
 Where the two disagree, the product plan wins and the spec's wording is stale, not a second opinion. `spec.md`
 also refers to the export as `Planning Poker.dc.html`; the file in this directory is `planning-poker.html`.
