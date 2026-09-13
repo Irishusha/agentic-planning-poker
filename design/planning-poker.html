@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0A0A0C;color:#ECECF1;font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+input,textarea,select,button{font-family:inherit}
+input::placeholder,textarea::placeholder{color:#5E5E6E}
+select{color-scheme:dark;accent-color:#B07CFF}
+option{background:#121217;color:#ECECF1}
+option:checked,option:hover{background:#33244D;color:#F0E7FF}
+::selection{background:#4A3A66;color:#F6F0FF}
+a{color:#B07CFF;text-decoration:none}
+a:hover{color:#C9A6FF}
+@keyframes ppPulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes ppIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0A0A0C">
+
+  <div style="position:sticky;top:0;z-index:60;display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 16px;background:rgba(12,12,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid #1F1F27">
+    <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#63637A">SCREEN</span>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <sc-for list="{{stateTabs}}" as="t" hint-placeholder-count="5">
+        <button onClick="{{ t.go }}" style="{{ t.style }}" style-hover="color:#ECECF1">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    <div style="flex:1 1 0;min-width:0"></div>
+    <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#63637A">VIEW AS</span>
+    <div style="display:flex;gap:6px">
+      <sc-for list="{{roleTabs}}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.go }}" style="{{ t.style }}" style-hover="color:#ECECF1">{{ t.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;justify-content:center;padding:56px 20px 80px">
+      <div style="width:100%;max-width:460px">
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:18px;margin-bottom:38px">
+          <div style="position:relative;width:64px;height:64px">
+            <div style="position:absolute;inset:0;border-radius:18px;background:#B07CFF;opacity:.22;filter:blur(18px)"></div>
+            <div style="position:absolute;left:6px;top:4px;width:44px;height:56px;border-radius:10px;background:#2A2035;border:1px solid #4A3A66;transform:rotate(-14deg)"></div>
+            <div style="position:absolute;left:16px;top:4px;width:44px;height:56px;border-radius:10px;background:linear-gradient(160deg,#C79BFF,#8B5CF6);transform:rotate(10deg);display:flex;align-items:center;justify-content:center">
+              <span style="font:700 20px/1 'JetBrains Mono',monospace;color:#14101C">8</span>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <h1 style="margin:0;font:800 40px/1.05 'Plus Jakarta Sans',sans-serif;letter-spacing:-.03em">Planning Poker</h1>
+            <p style="margin:10px 0 0;font:400 15px/1.5 'Plus Jakarta Sans',sans-serif;color:#8A8A9B">Everyone shows their hand at once</p>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:#121217;border:1px solid #22222C;border-radius:14px;margin-bottom:26px">
+          <button onClick="{{ goCreate }}" style="{{ createTabStyle }}">Create new</button>
+          <button onClick="{{ goJoin }}" style="{{ joinTabStyle }}">Join existing</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <sc-if value="{{ isJoin }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">ROOM ID</label>
+              <input placeholder="Enter room ID or paste full link" style="width:100%;height:52px;padding:0 16px;background:#111116;border:1px solid #26262F;border-radius:12px;color:#ECECF1;font-size:15px;outline:none" style-focus="border-color:#8B5CF6;background:#141019"></input>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">YOUR NAME</label>
+            <input placeholder="Enter your name" style="width:100%;height:52px;padding:0 16px;background:#111116;border:1px solid #26262F;border-radius:12px;color:#ECECF1;font-size:15px;outline:none" style-focus="border-color:#8B5CF6;background:#141019"></input>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">ROLE</label>
+            <div style="position:relative">
+              <select style="appearance:none;width:100%;height:52px;padding:0 44px 0 16px;background:#111116;border:1px solid #26262F;border-radius:12px;color:#ECECF1;font-size:15px;outline:none">
+                <option>QA</option>
+                <option>Back-end developer</option>
+                <option>Front-end developer</option>
+                <option>Business analyst</option>
+                <option>PM</option>
+              </select>
+              <span style="position:absolute;right:18px;top:50%;transform:translateY(-50%);color:#7A7A8C;font-size:12px;pointer-events:none">▼</span>
+            </div>
+          </div>
+
+          <button onClick="{{ toggleObserver }}" style="{{ observerBoxStyle }}">
+            <span style="display:flex;flex-direction:column;gap:3px;text-align:left">
+              <span style="font:600 14px/1.3 'Plus Jakarta Sans',sans-serif;color:#ECECF1">Join as observer</span>
+              <span style="font:400 12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#8A8A9B">Watch the estimation without voting</span>
+            </span>
+            <span style="{{ observerCheckStyle }}">{{ observerCheckMark }}</span>
+          </button>
+
+          <sc-if value="{{ isCreate }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">ESTIMATION SCALE</label>
+              <div style="position:relative">
+                <select style="appearance:none;width:100%;height:52px;padding:0 44px 0 16px;background:#111116;border:1px solid #26262F;border-radius:12px;color:#ECECF1;font-size:15px;outline:none">
+                  <option>Hours / days</option>
+                  <option>Fibonacci</option>
+                  <option>T-shirt sizes</option>
+                </select>
+                <span style="position:absolute;right:18px;top:50%;transform:translateY(-50%);color:#7A7A8C;font-size:12px;pointer-events:none">▼</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <button onClick="{{ enterRoom }}" style="width:100%;height:56px;margin-top:6px;border:none;border-radius:14px;background:linear-gradient(180deg,#B07CFF,#8B5CF6);color:#120C1C;font:700 16px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;box-shadow:0 10px 30px rgba(139,92,246,.28)" style-hover="filter:brightness(1.08)" style-active="transform:translateY(1px)">{{ primaryCta }}</button>
+
+          <p style="margin:2px 0 0;text-align:center;font:400 12.5px/1.5 'Plus Jakarta Sans',sans-serif;color:#63637A">No account needed — the room link is the invite.</p>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRoom }}">
+    <div style="max-width:1240px;margin:0 auto;padding:16px 16px 28px">
+
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 16px;background:#111116;border:1px solid #22222C;border-radius:16px;margin-bottom:18px">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(160deg,#C79BFF,#8B5CF6);display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+          <span style="font:700 14px/1 'JetBrains Mono',monospace;color:#14101C">8</span>
+        </div>
+        <div style="min-width:0;flex:1 1 180px">
+          <div style="font:700 15px/1.2 'Plus Jakarta Sans',sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Sprint 42 — Refinement</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <span style="font:500 11.5px/1 'JetBrains Mono',monospace;color:#8A8A9B">PP-7F3K2</span>
+            <span style="width:3px;height:3px;border-radius:50%;background:#3A3A46"></span>
+            <span style="font:500 11.5px/1 'JetBrains Mono',monospace;color:#8A8A9B">{{ scaleLabel }}</span>
+          </div>
+        </div>
+        <sc-if value="{{ showTimer }}">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#15121B;border:1px solid #2B2438;border-radius:10px">
+            <span style="width:6px;height:6px;border-radius:50%;background:#B07CFF;animation:ppPulse 1.6s ease-in-out infinite"></span>
+            <span style="font:700 13px/1 'JetBrains Mono',monospace;color:#D9C8F5">{{ timerLabel }}</span>
+          </div>
+        </sc-if>
+        <button style="height:40px;padding:0 14px;background:#17171E;border:1px solid #2B2B36;border-radius:10px;color:#C9C9D6;font:600 13px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="border-color:#3E3E4C;color:#ECECF1">Copy invite link</button>
+        <button style="height:40px;padding:0 14px;background:transparent;border:1px solid #2B2B36;border-radius:10px;color:#8A8A9B;font:600 13px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="color:#ECECF1;border-color:#3E3E4C">Leave</button>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+
+        <div style="flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:18px">
+
+          <sc-if value="{{ showComposer }}">
+            <div style="padding:20px;background:#111116;border:1px solid #22222C;border-radius:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px">
+                <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">WHAT ARE WE ESTIMATING?</span>
+                <span style="padding:5px 9px;background:#1B1522;border:1px solid #372B4A;border-radius:6px;font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:#B07CFF">HOST ONLY</span>
+              </div>
+              <input placeholder="Task title — e.g. PP-318 Bulk import of candidates" style="width:100%;height:50px;padding:0 14px;margin-bottom:10px;background:#0D0D12;border:1px solid #26262F;border-radius:12px;color:#ECECF1;font-size:15px;outline:none" style-focus="border-color:#8B5CF6"></input>
+              <textarea rows="4" placeholder="Paste the description, acceptance criteria or a ticket link here. Everyone in the room sees it live." style="width:100%;padding:12px 14px;background:#0D0D12;border:1px solid #26262F;border-radius:12px;color:#ECECF1;font:400 14px/1.55 'Plus Jakarta Sans',sans-serif;resize:vertical;outline:none" style-focus="border-color:#8B5CF6"></textarea>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px">
+                <button onClick="{{ startRound }}" style="height:46px;padding:0 20px;border:none;border-radius:12px;background:linear-gradient(180deg,#B07CFF,#8B5CF6);color:#120C1C;font:700 14px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">Start round</button>
+                <button style="height:46px;padding:0 18px;background:#17171E;border:1px solid #2B2B36;border-radius:12px;color:#C9C9D6;font:600 14px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="border-color:#3E3E4C">Attach ticket link</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showWaitingPanel }}">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:44px 24px;background:#111116;border:1px solid #22222C;border-radius:18px">
+              <div style="display:flex;gap:8px">
+                <span style="width:10px;height:10px;border-radius:50%;background:#B07CFF;animation:ppPulse 1.4s ease-in-out infinite"></span>
+                <span style="width:10px;height:10px;border-radius:50%;background:#B07CFF;animation:ppPulse 1.4s ease-in-out .2s infinite"></span>
+                <span style="width:10px;height:10px;border-radius:50%;background:#B07CFF;animation:ppPulse 1.4s ease-in-out .4s infinite"></span>
+              </div>
+              <div style="font:700 19px/1.3 'Plus Jakarta Sans',sans-serif;letter-spacing:-.01em">Waiting for the host to start the round</div>
+              <p style="margin:0;max-width:440px;font:400 14px/1.6 'Plus Jakarta Sans',sans-serif;color:#8A8A9B;text-wrap:pretty">{{ waitingCopy }}</p>
+              <div style="width:100%;max-width:440px;margin-top:6px;padding:18px;background:#0E0E13;border:1px dashed #2E2E3A;border-radius:14px;text-align:left">
+                <div style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#63637A">CURRENT TASK</div>
+                <div style="margin-top:12px;height:12px;width:70%;border-radius:6px;background:#191921"></div>
+                <div style="margin-top:10px;height:9px;width:100%;border-radius:5px;background:#15151C"></div>
+                <div style="margin-top:8px;height:9px;width:85%;border-radius:5px;background:#15151C"></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showTaskCard }}">
+            <div style="padding:20px;background:#111116;border:1px solid #22222C;border-radius:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+                <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">CURRENT TASK</span>
+                <sc-if value="{{ isHost }}">
+                  <button style="padding:6px 10px;background:transparent;border:1px solid #2B2B36;border-radius:8px;color:#8A8A9B;font:600 11.5px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="color:#ECECF1;border-color:#3E3E4C">Edit task</button>
+                </sc-if>
+              </div>
+              <h2 style="margin:0;font:700 22px/1.3 'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em;text-wrap:pretty">PP-318 · Bulk import of candidates from CSV</h2>
+              <p style="margin:12px 0 0;font:400 14.5px/1.65 'Plus Jakarta Sans',sans-serif;color:#9A9AAB;text-wrap:pretty">Recruiter uploads a CSV, we validate rows, show a preview with errors per row, then create candidate records. Duplicates are matched by email. Needs a background job for files over 500 rows and an import report in the activity log.</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showVoting }}">
+            <div style="padding:20px;background:#111116;border:1px solid #22222C;border-radius:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
+                <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">{{ votingHeading }}</span>
+                <span style="font:700 12px/1 'JetBrains Mono',monospace;color:#B07CFF">{{ scaleLabel }}</span>
+              </div>
+
+              <sc-if value="{{ isObserver }}">
+                <div style="display:flex;align-items:center;gap:12px;padding:16px;background:#0F0F14;border:1px dashed #2E2E3A;border-radius:14px">
+                  <span style="width:34px;height:34px;border-radius:50%;border:1px solid #37374A;display:flex;align-items:center;justify-content:center;font-size:15px;color:#8A8A9B;flex:0 0 auto">◔</span>
+                  <span style="font:400 13.5px/1.5 'Plus Jakarta Sans',sans-serif;color:#8A8A9B">You joined as an observer — voting is disabled for you. You'll see every card the moment the host reveals them.</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ canVote }}">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:10px">
+                  <sc-for list="{{ cards }}" as="c" hint-placeholder-count="10">
+                    <button onClick="{{ c.pick }}" style="{{ c.style }}" style-hover="border-color:#4A3A66;transform:translateY(-3px)">{{ c.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px">
+                  <button onClick="{{ toggleAway }}" style="{{ awayStyle }}" style-hover="border-color:#7C5CC4;color:#ECECF1">{{ awayLabel }}</button>
+                </div>
+              </sc-if>
+
+              <div style="height:1px;background:#22222C;margin:18px 0"></div>
+
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+                <div style="display:flex;align-items:center;gap:8px;flex:1 1 200px;min-width:0">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#B07CFF;animation:ppPulse 1.6s ease-in-out infinite;flex:0 0 auto"></span>
+                  <span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#9A9AAB">{{ statusLine }}</span>
+                </div>
+                <sc-if value="{{ isHost }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:10px">
+                    <button onClick="{{ reveal }}" style="height:46px;padding:0 20px;border:none;border-radius:12px;background:linear-gradient(180deg,#B07CFF,#8B5CF6);color:#120C1C;font:700 14px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="filter:brightness(1.08)">Reveal cards</button>
+                    <button onClick="{{ reset }}" style="height:46px;padding:0 18px;background:#17171E;border:1px solid #2B2B36;border-radius:12px;color:#C9C9D6;font:600 14px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="border-color:#3E3E4C">Reset votes</button>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isRevealed }}">
+            <div style="padding:16px;background:#111116;border:1px solid #22222C;border-radius:18px;animation:ppIn .3s ease-out">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px">
+                <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C;flex:0 0 auto">RESULTS</span>
+                <span style="flex:1 1 220px;min-width:0;font:600 14px/1.3 'Plus Jakarta Sans',sans-serif;color:#C9C9D6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ taskTitle }}">{{ taskTitle }}</span>
+                <span style="{{ agreementStyle }}">{{ agreementLabel }}</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ roleCards }}" as="g" hint-placeholder-count="4">
+                  <div style="{{ g.rowStyle }}">
+                    <div style="display:flex;align-items:baseline;gap:6px;flex:0 0 190px;min-width:0">
+                      <span style="{{ g.bulletStyle }}"></span>
+                      <span style="flex:0 0 auto;font:700 12.5px/1.25 'Plus Jakarta Sans',sans-serif;color:#ECECF1;white-space:nowrap">{{ g.role }}</span>
+                      <span style="{{ g.votesStyle }}">{{ g.votes }}</span>
+                    </div>
+
+                    <div style="flex:1 1 110px;min-width:100px;display:flex;align-items:center;gap:10px">
+                      <span style="flex:1 1 0;min-width:0;position:relative;height:36px;display:block">
+                        <span style="position:absolute;top:10px;left:0;right:0;height:4px;border-radius:3px;background:#32323F"></span>
+                        <sc-if value="{{ g.showRange }}">
+                          <span style="{{ g.rangeFill }}"></span>
+                        </sc-if>
+                        <sc-for list="{{ g.dots }}" as="d" hint-placeholder-count="2">
+                          <span style="{{ d.style }}" title="{{ d.tip }}">{{ d.count }}</span>
+                        </sc-for>
+                        <sc-for list="{{ g.dots }}" as="d" hint-placeholder-count="2">
+                          <span style="{{ d.labelStyle }}">{{ d.label }}</span>
+                        </sc-for>
+                        <sc-if value="{{ g.showAvg }}">
+                          <span style="{{ g.avgMark }}" title="{{ g.avgTip }}"></span>
+                        </sc-if>
+                      </span>
+                    </div>
+
+                    <div style="flex:0 0 88px;display:flex;align-items:baseline;gap:6px;justify-content:flex-end;cursor:default" title="{{ g.resultTip }}">
+                      <span style="font:700 9.5px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:#8A8A9B">{{ g.resultLabel }}</span>
+                      <span style="{{ g.resultStyle }}">{{ g.result }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+
+                <div style="padding:0 15px 0 19px;font:400 10.5px/1.3 'Plus Jakarta Sans',sans-serif;color:#7F7F92;text-align:center">{{ axisNote }}</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="flex:0 1 272px;min-width:236px;display:flex;flex-direction:column;gap:18px">
+
+          <div style="padding:18px;background:#111116;border:1px solid #22222C;border-radius:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px">
+              <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C">PARTICIPANTS</span>
+              <span style="font:700 12px/1 'JetBrains Mono',monospace;color:#8A8A9B">{{ participantCount }}</span>
+            </div>
+
+            <div style="{{ rosterStyle }}">
+              <sc-for list="{{ peopleGroups }}" as="g" hint-placeholder-count="4">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:center;gap:10px;padding:0 2px">
+                    <span style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#8A8A9B">{{ g.role }}</span>
+                    <span style="flex:1 1 0;height:1px;background:#1E1E27"></span>
+                    <span style="font:600 10.5px/1 'JetBrains Mono',monospace;color:#5E5E6E">{{ g.count }}</span>
+                  </div>
+                  <sc-for list="{{ g.members }}" as="p" hint-placeholder-count="2">
+                    <div style="{{ p.rowStyle }}">
+                      <span style="{{ p.avatarStyle }}">{{ p.initials }}</span>
+                      <span style="flex:1 1 0;min-width:0">
+                        <span style="display:block;font:600 13px/1.25 'Plus Jakarta Sans',sans-serif;color:#ECECF1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span>
+                        <sc-if value="{{ p.showMeta }}">
+                          <span style="display:block;margin-top:3px;font:500 11px/1.2 'JetBrains Mono',monospace;color:#7A7A8C;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.meta }}</span>
+                        </sc-if>
+                      </span>
+                      <span style="{{ p.badgeStyle }}">{{ p.badge }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ isWaiting }}">
+              <div style="margin-top:12px;padding:16px;border:1px dashed #2E2E3A;border-radius:14px;text-align:center">
+                <div style="font:600 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#C9C9D6">Waiting for the team</div>
+                <div style="margin-top:6px;font:400 12.5px/1.5 'Plus Jakarta Sans',sans-serif;color:#7A7A8C">Share the room link — people appear here the second they join.</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;background:#0C0C11;border:1px solid #23232D;border-radius:10px">
+                  <span style="flex:1 1 0;min-width:0;font:500 11.5px/1.3 'JetBrains Mono',monospace;color:#8A8A9B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">poker.company.io/r/PP-7F3K2</span>
+                  <button style="flex:0 0 auto;padding:6px 10px;background:#1B1522;border:1px solid #372B4A;border-radius:8px;color:#B07CFF;font:700 11px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="filter:brightness(1.15)">Copy</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ showSessionCard }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:18px;background:#111116;border:1px solid #22222C;border-radius:18px">
+            <div style="font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#7A7A8C;margin-bottom:14px">SESSION</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ sessionRows }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                  <span style="font:400 13px/1.3 'Plus Jakarta Sans',sans-serif;color:#7A7A8C">{{ r.label }}</span>
+                  <span style="font:600 13px/1.3 'JetBrains Mono',monospace;color:#C9C9D6;text-align:right">{{ r.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Hours / days&quot;,&quot;Fibonacci&quot;,&quot;T-shirt&quot;],&quot;default&quot;:&quot;Hours / days&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session rules&quot;},&quot;showTimer&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Session rules&quot;}}">
+const SCALES = {
+  "Hours / days": [
+    { id: "4h", label: "4h", h: 4 }, { id: "1d", label: "1d", h: 8 }, { id: "2d", label: "2d", h: 16 },
+    { id: "3d", label: "3d", h: 24 }, { id: "5d", label: "5d", h: 40 }, { id: "8d", label: "8d", h: 64 },
+    { id: "10d", label: "10d", h: 80 }, { id: "14d", label: "14d", h: 112 },
+    { id: "?", label: "?", h: null }, { id: "coffee", label: "☕", h: null }
+  ],
+  "Fibonacci": [
+    { id: "1", label: "1", h: 1 }, { id: "2", label: "2", h: 2 }, { id: "3", label: "3", h: 3 },
+    { id: "5", label: "5", h: 5 }, { id: "8", label: "8", h: 8 }, { id: "13", label: "13", h: 13 },
+    { id: "21", label: "21", h: 21 }, { id: "34", label: "34", h: 34 },
+    { id: "?", label: "?", h: null }, { id: "coffee", label: "☕", h: null }
+  ],
+  "T-shirt": [
+    { id: "XS", label: "XS", h: 1 }, { id: "S", label: "S", h: 2 }, { id: "M", label: "M", h: 3 },
+    { id: "L", label: "L", h: 5 }, { id: "XL", label: "XL", h: 8 }, { id: "XXL", label: "XXL", h: 13 },
+    { id: "?", label: "?", h: null }, { id: "coffee", label: "☕", h: null }
+  ]
+};
+
+const PEOPLE = [
+  { id: "anna", name: "Anna Kovalenko", role: "PM", host: true, observer: false, est: "2d", early: false },
+  { id: "dmytro", name: "Dmytro Levchenko", role: "Back-end developer", host: false, observer: false, est: "5d", early: true },
+  { id: "olena", name: "Olena Shevchuk", role: "Front-end developer", host: false, observer: false, est: "3d", early: true },
+  { id: "serhii", name: "Serhii Bondar", role: "QA", host: false, observer: false, est: "2d", early: false },
+  { id: "iryna", name: "Iryna Marchenko", role: "Business analyst", host: false, observer: false, est: "1d", early: true },
+  { id: "maksym", name: "Maksym Tkachuk", role: "Back-end developer", host: false, observer: false, est: "8d", early: false },
+  { id: "kateryna", name: "Kateryna Hrytsenko", role: "QA", host: false, observer: true, est: null, early: false }
+];
+
+const ROLE_ORDER = ["QA", "Back-end developer", "Front-end developer", "Business analyst", "PM"];
+const ROLE_INK = {
+  "QA": "#5FD6B4",
+  "Back-end developer": "#B07CFF",
+  "Front-end developer": "#5FA8FF",
+  "Business analyst": "#FFB35C",
+  "PM": "#FF7EA8"
+};
+const ROLE_SHORT = { "QA": "QA", "Back-end developer": "BACK-END", "Front-end developer": "FRONT-END", "Business analyst": "BUSINESS ANALYSIS", "PM": "PM" };
+const ME = { host: "anna", member: "dmytro", observer: "kateryna" };
+
+class Component extends DCLogic {
+  state = { screen: "landing", tab: "create", viewAs: "host", room: "voting", myEstimate: null, observerOptIn: false };
+
+  set(patch) { this.setState(patch); }
+
+  scaleName() {
+    const s = this.props.scale || "Hours / days";
+    return SCALES[s] ? s : "Hours / days";
+  }
+
+  card(id) { return SCALES[this.scaleName()].find(c => c.id === id) || null; }
+
+  fmt(id) { const c = this.card(id); return c ? c.label : "—"; }
+
+  hoursOf(id) { const c = this.card(id); return c ? c.h : null; }
+
+  fmtHours(h) {
+    if (h == null) return "—";
+    if (this.scaleName() !== "Hours / days") return String(Math.round(h * 10) / 10);
+    if (h < 8) return h + "h";
+    return (Math.round((h / 8) * 10) / 10) + "d";
+  }
+
+  me() { return PEOPLE.find(p => p.id === ME[this.state.viewAs]); }
+
+  roster() {
+    return this.state.room === "waiting" ? PEOPLE.slice(0, 3) : PEOPLE;
+  }
+
+  voteOf(p) {
+    const revealed = this.state.room === "revealed";
+    if (p.observer || this.state.room === "waiting") return null;
+    if (revealed) return p.est;
+    if (p.id === this.me().id) return this.state.myEstimate;
+    return p.early ? p.est : null;
+  }
+
+  tabStyle(active) {
+    return {
+      padding: "7px 12px", borderRadius: "8px", cursor: "pointer",
+      font: "600 12px/1 'Plus Jakarta Sans',sans-serif",
+      background: active ? "#33244D" : "transparent",
+      border: "1px solid " + (active ? "#7C5CC4" : "#24242E"),
+      color: active ? "#F0E7FF" : "#8A8A9B"
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const me = this.me();
+    const isRoom = st.screen === "room";
+    const roster = this.roster();
+    const scale = SCALES[this.scaleName()];
+    const observerNow = me.observer || (st.viewAs === "observer");
+
+    const states = [
+      ["landing-create", "Create session"],
+      ["landing-join", "Join session"],
+      ["room-waiting", "Room · waiting"],
+      ["room-voting", "Room · voting"],
+      ["room-revealed", "Room · revealed"]
+    ];
+    const current = isRoom ? "room-" + st.room : "landing-" + st.tab;
+    const stateTabs = states.map(([id, label]) => ({
+      label, style: this.tabStyle(current === id),
+      go: () => id.startsWith("landing")
+        ? this.set({ screen: "landing", tab: id.split("-")[1] })
+        : this.set({ screen: "room", room: id.split("-")[1], myEstimate: id === "room-revealed" ? "3d" : null })
+    }));
+
+    const roleTabs = [["host", "Host"], ["member", "Member"], ["observer", "Observer"]].map(([id, label]) => ({
+      label, style: this.tabStyle(st.viewAs === id), go: () => this.set({ viewAs: id })
+    }));
+
+    const voters = roster.filter(p => !p.observer);
+    const votedCount = voters.filter(p => this.voteOf(p) != null).length;
+
+    const cards = scale.filter(c => c.id !== "coffee").map(c => {
+      const sel = st.myEstimate === c.id;
+      return {
+        label: c.label,
+        pick: () => this.set({ myEstimate: c.id }),
+        style: {
+          height: "72px", display: "flex", alignItems: "center", justifyContent: "center",
+          borderRadius: "14px", cursor: "pointer", transition: "transform .15s ease, border-color .15s ease",
+          font: "700 20px/1 'JetBrains Mono',monospace",
+          background: sel ? "linear-gradient(180deg,#B07CFF,#8B5CF6)" : "#0E0E13",
+          border: "1px solid " + (sel ? "#C79BFF" : "#2A2A35"),
+          color: sel ? "#120C1C" : "#ECECF1",
+          boxShadow: sel ? "0 10px 26px rgba(139,92,246,.30)" : "none"
+        }
+      };
+    });
+
+    const revealedVotes = roster.filter(p => !p.observer).map(p => ({ p, v: st.room === "revealed" ? p.est : null }));
+    const hrs = revealedVotes.map(x => this.hoursOf(x.v)).filter(v => v != null);
+    const min = hrs.length ? Math.min.apply(null, hrs) : null;
+    const max = hrs.length ? Math.max.apply(null, hrs) : null;
+    const avg = hrs.length ? hrs.reduce((a, b) => a + b, 0) / hrs.length : null;
+    const spreadSteps = (min != null) ? scale.filter(c => c.h != null && c.h >= min && c.h <= max).length - 1 : 0;
+    const agree = min === max;
+    const votedIds = revealedVotes.filter(x => x.v != null);
+    const short = n => n.split(" ")[0] + " " + n.split(" ")[1].charAt(0) + ".";
+
+    const teamSpan = (max != null && max > min) ? max - min : 0;
+    const posOf = h => teamSpan ? ((h - min) / teamSpan) * 100 : 50;
+
+    const roleCards = ROLE_ORDER.map(role => {
+      const mem = revealedVotes.filter(x => x.p.role === role);
+      if (!mem.length) return null;
+      const vs = mem.map(x => this.hoursOf(x.v)).filter(v => v != null);
+      const lo = vs.length ? Math.min.apply(null, vs) : null;
+      const hi = vs.length ? Math.max.apply(null, vs) : null;
+      const av = vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : null;
+      const ink = ROLE_INK[role] || "#8A8A9B";
+      const solo = mem.length === 1;
+      const spread = hi > lo;
+
+      const grouped = {};
+      mem.forEach(x => {
+        const h = this.hoursOf(x.v);
+        if (h == null) return;
+        grouped[h] = grouped[h] || { h, who: [] };
+        grouped[h].who.push(short(x.p.name));
+      });
+      const dots = Object.keys(grouped).map(k => grouped[k]).sort((a, b) => a.h - b.h).map(d => {
+        const n = d.who.length;
+        const size = n > 1 ? 20 : 14;
+        const edge = spread && (d.h === lo ? "Minimum · " : d.h === hi ? "Maximum · " : "");
+        return {
+          count: n > 1 ? String(n) : "",
+          tip: (edge || "") + this.fmtHours(d.h) + " — " + d.who.join(", "),
+          label: this.fmtHours(d.h),
+          labelStyle: {
+            position: "absolute", top: "24px", left: posOf(d.h) + "%", transform: "translateX(-50%)",
+            font: "700 10px/1 'JetBrains Mono',monospace", color: ink, whiteSpace: "nowrap", opacity: .95
+          },
+          style: {
+            position: "absolute", top: "12px", left: "calc(" + posOf(d.h) + "% - " + (size / 2) + "px)",
+            width: size + "px", height: size + "px", marginTop: (-size / 2) + "px",
+            borderRadius: "50%", background: ink, border: "2px solid #0B0B10", zIndex: 2,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            font: "700 10px/1 'JetBrains Mono',monospace", color: "#0B0B10", cursor: "default"
+          }
+        };
+      });
+
+      return {
+        role: ROLE_SHORT[role] || role,
+        votes: mem.length + (mem.length === 1 ? " vote" : " votes"),
+        result: this.fmtHours(solo ? lo : av),
+        resultLabel: solo ? "EST" : "AVG",
+        resultTip: solo ? mem[0].p.name + " · " + this.fmtHours(lo) : "Average: " + this.fmtHours(av),
+        soloName: solo ? mem[0].p.name : "",
+        isSolo: solo,
+        showRange: spread,
+        showAvg: !solo && spread,
+        avgTip: "Average: " + this.fmtHours(av),
+        dots,
+        rowStyle: {
+          display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px 14px",
+          padding: "11px 14px", minHeight: "62px", borderRadius: "14px", minWidth: 0,
+          background: "#0E0E13", border: "1px solid #20202A", borderLeft: "4px solid " + ink
+        },
+        bulletStyle: { flex: "0 0 auto", width: "9px", height: "9px", borderRadius: "50%", background: ink, alignSelf: "center" },
+        votesStyle: { flex: "0 0 auto", font: "600 11px/1.25 'JetBrains Mono',monospace", color: ink, opacity: .92 },
+        resultStyle: { font: "700 22px/1 'JetBrains Mono',monospace", letterSpacing: "-.02em", color: "#F6F0FF", whiteSpace: "nowrap" },
+        rangeFill: {
+          position: "absolute", top: "12px", marginTop: "-3px", height: "6px", borderRadius: "4px",
+          left: (lo != null ? posOf(lo) : 50) + "%",
+          width: Math.max((hi != null ? posOf(hi) : 50) - (lo != null ? posOf(lo) : 50), 0.5) + "%",
+          background: ink, opacity: .6
+        },
+        avgMark: {
+          position: "absolute", top: "12px", left: "calc(" + (av != null ? posOf(av) : 50) + "% - 6px)",
+          width: "12px", height: "12px", marginTop: "-6px", transform: "rotate(45deg)",
+          background: "#0B0B10", border: "2px solid " + ink, borderRadius: "2px",
+          zIndex: 3, cursor: "default"
+        }
+      };
+    }).filter(Boolean);
+
+    const peopleGroups = ROLE_ORDER.map(role => {
+      const mem = roster.filter(p => p.role === role);
+      if (!mem.length) return null;
+      const votedHere = mem.filter(p => !p.observer && this.voteOf(p) != null).length;
+      const votersHere = mem.filter(p => !p.observer).length;
+      return { role: ROLE_SHORT[role] || role, count: votedHere + "/" + votersHere, ids: mem.map(p => p.id) };
+    }).filter(Boolean);
+
+    const people = roster.map(p => {
+      const v = this.voteOf(p);
+      const isMe = p.id === me.id;
+      const revealed = st.room === "revealed";
+      let badge = "Waiting", bg = "#14141A", bd = "#26262F", fg = "#7A7A8C";
+      if (p.observer) { badge = "Observer"; }
+      else if (revealed && v != null) { badge = this.fmt(v); bg = "#2A1E46"; bd = "#7C5CC4"; fg = "#F0E7FF"; }
+      else if (v === "coffee") { badge = "☕ Away"; bg = "#221A38"; bd = "#5A4488"; fg = "#D9C8F5"; }
+      else if (v != null) { badge = "Voted"; bg = "#241A3A"; bd = "#6B54A0"; fg = "#C9A6FF"; }
+      const flags = [];
+      if (p.host) flags.push("host");
+      if (p.observer) flags.push("observer only");
+      if (isMe) flags.push("you");
+      return {
+        pid: p.id,
+        initials: p.name.split(" ").map(w => w.charAt(0)).join(""),
+        name: p.name + (isMe ? " (you)" : ""),
+        meta: flags.length ? flags.join(" · ") : "team member",
+        rowStyle: {
+          display: "flex", alignItems: "center", gap: "10px",
+          padding: revealed ? "7px 9px" : "10px",
+          background: "#0E0E13", border: "1px solid #20202A", borderRadius: "12px"
+        },
+        showMeta: !revealed,
+        avatarStyle: {
+          width: revealed ? "28px" : "34px", height: revealed ? "28px" : "34px", borderRadius: revealed ? "8px" : "10px", flex: "0 0 auto",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          font: "700 12px/1 'JetBrains Mono',monospace",
+          background: isMe ? "linear-gradient(160deg,#C79BFF,#8B5CF6)" : "#1A1A22",
+          color: isMe ? "#120C1C" : "#9A9AAB",
+          border: "1px solid " + (isMe ? "transparent" : "#2A2A35"),
+          opacity: p.observer ? .65 : 1
+        },
+        badge,
+        badgeStyle: {
+          flex: "0 0 auto", padding: "6px 10px", borderRadius: "8px",
+          font: "700 11.5px/1 'JetBrains Mono',monospace",
+          background: bg, border: "1px solid " + bd, color: fg
+        }
+      };
+    });
+
+    peopleGroups.forEach(g => { g.members = g.ids.map(id => people.find(x => x.pid === id)); });
+
+    const awayActive = st.myEstimate === "coffee";
+
+    const sessionRows = [
+      { label: "Room", value: "PP-7F3K2" },
+      { label: "Scale", value: this.scaleName() },
+      { label: "Host", value: "Anna K." },
+      { label: "Reveal control", value: "Host only" }
+    ];
+
+    return {
+      stateTabs, roleTabs,
+      isLanding: !isRoom, isRoom,
+      isCreate: st.tab === "create", isJoin: st.tab === "join",
+      createTabStyle: {
+        height: "44px", borderRadius: "10px", cursor: "pointer", border: "none",
+        font: "600 14px/1 'Plus Jakarta Sans',sans-serif",
+        background: st.tab === "create" ? "linear-gradient(180deg,#3C2A5E,#2B1F44)" : "transparent",
+        color: st.tab === "create" ? "#F6F0FF" : "#8A8A9B",
+        boxShadow: st.tab === "create" ? "inset 0 0 0 1px #8B6BD6, 0 6px 18px rgba(139,92,246,.22)" : "none"
+      },
+      joinTabStyle: {
+        height: "44px", borderRadius: "10px", cursor: "pointer", border: "none",
+        font: "600 14px/1 'Plus Jakarta Sans',sans-serif",
+        background: st.tab === "join" ? "linear-gradient(180deg,#3C2A5E,#2B1F44)" : "transparent",
+        color: st.tab === "join" ? "#F6F0FF" : "#8A8A9B",
+        boxShadow: st.tab === "join" ? "inset 0 0 0 1px #8B6BD6, 0 6px 18px rgba(139,92,246,.22)" : "none"
+      },
+      goCreate: () => this.set({ tab: "create" }),
+      goJoin: () => this.set({ tab: "join" }),
+      toggleObserver: () => this.set({ observerOptIn: !st.observerOptIn }),
+      observerBoxStyle: {
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px",
+        width: "100%", padding: "14px 16px", borderRadius: "12px", cursor: "pointer", textAlign: "left",
+        background: st.observerOptIn ? "#15111C" : "#111116",
+        border: "1px solid " + (st.observerOptIn ? "#4A3A66" : "#26262F")
+      },
+      observerCheckStyle: {
+        width: "24px", height: "24px", borderRadius: "7px", flex: "0 0 auto",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        font: "700 13px/1 'Plus Jakarta Sans',sans-serif",
+        background: st.observerOptIn ? "#B07CFF" : "transparent",
+        border: "1px solid " + (st.observerOptIn ? "#B07CFF" : "#3A3A46"),
+        color: "#120C1C"
+      },
+      observerCheckMark: st.observerOptIn ? "✓" : "",
+      primaryCta: st.tab === "create" ? "Create session" : "Join session",
+      enterRoom: () => this.set({ screen: "room", room: st.tab === "create" ? "waiting" : "voting", myEstimate: null }),
+
+      scaleLabel: this.scaleName(),
+      showTimer: this.props.showTimer !== false,
+      timerLabel: st.room === "revealed" ? "04:12" : "01:47",
+      isHost: st.viewAs === "host",
+      isObserver: observerNow,
+      canVote: !observerNow,
+      isWaiting: st.room === "waiting",
+      isRevealed: st.room === "revealed",
+      notRevealed: st.room !== "revealed",
+      taskTitle: "PP-318 · Bulk import of candidates from CSV",
+      showComposer: st.room === "waiting" && st.viewAs === "host",
+      showWaitingPanel: st.room === "waiting" && st.viewAs !== "host",
+      waitingCopy: observerNow
+        ? "You're here as an observer. The host is writing up the task — once the round starts you'll see it here and watch the cards come in."
+        : "The host is writing up the task. It appears here the moment the round starts, and your estimate cards unlock right below it.",
+      showTaskCard: st.room === "voting",
+      showVoting: st.room === "voting",
+      votingHeading: observerNow ? "ESTIMATION IN PROGRESS" : "CHOOSE YOUR ESTIMATE",
+      statusLine: st.room === "waiting" ? "Waiting for the host to start the round"
+        : votedCount + " of " + voters.length + " voted · cards stay hidden until the host reveals",
+      participantCount: roster.length + (roster.length === 1 ? " person" : " people"),
+      people, peopleGroups, cards, roleCards, sessionRows,
+      axisNote: "All roles use the same " + this.fmtHours(min) + "–" + this.fmtHours(max) + " scale",
+      showSessionCard: st.room !== "revealed",
+      rosterStyle: { display: "flex", flexDirection: "column", gap: st.room === "revealed" ? "11px" : "16px" },
+      toggleAway: () => this.set({ myEstimate: awayActive ? null : "coffee" }),
+      awayLabel: awayActive ? "☕ Away — back soon" : "☕ Stepping out for coffee",
+      awayStyle: {
+        display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+        height: "46px", padding: "0 18px", borderRadius: "12px", cursor: "pointer",
+        font: "600 13.5px/1 'Plus Jakarta Sans',sans-serif",
+        background: awayActive ? "#33244D" : "#14141A",
+        border: "1px solid " + (awayActive ? "#7C5CC4" : "#2B2B36"),
+        color: awayActive ? "#F0E7FF" : "#9A9AAB"
+      },
+      agreementLabel: agree ? "Consensus" : "Needs discussion",
+      agreementStyle: {
+        padding: "6px 11px", borderRadius: "8px",
+        font: "700 11px/1 'JetBrains Mono',monospace", letterSpacing: ".08em",
+        background: agree ? "#121A16" : "#1B1522",
+        border: "1px solid " + (agree ? "#2F4A3C" : "#4A3A66"),
+        color: agree ? "#7FD6AE" : "#D9C8F5"
+      },
+      reveal: () => this.set({ room: "revealed", myEstimate: st.myEstimate != null ? st.myEstimate : "2d" }),
+      reset: () => this.set({ room: "voting", myEstimate: null }),
+      newTask: () => this.set({ room: "waiting", myEstimate: null }),
+      startRound: () => this.set({ room: "voting", myEstimate: null })
+    };
+  }
+}
+</script>
+</body>
+</html>
