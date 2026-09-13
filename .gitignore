@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Agent harness local state
+.agent-log/actions.jsonl
+.agent-log/summary.txt
+.claude/settings.local.json
