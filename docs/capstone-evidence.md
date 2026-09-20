@@ -63,7 +63,8 @@ command, so the rule holds even when an agent ignores it.
 | [`package.json`](../package.json) | `check` = `typecheck && lint && test && hooks:selftest && spec:check` |
 | [`scripts/spec-check.mjs`](../scripts/spec-check.mjs) | fails on an empty spec tree, on an archived change with unfinished tasks, and on any bare `openspec` call — cases `openspec validate` alone lets through |
 | [`scripts/hooks-selftest.mjs`](../scripts/hooks-selftest.mjs) | asserts the repository's own hooks still behave |
-| `lib/**`, `components/**` | **113 tests across 9 files**, all passing |
+| `lib/**`, `components/**` | **128 tests across 9 files**, all passing |
+| `0a8e2e7` docs: record the next-task manual walkthrough | a **human browser and keyboard walkthrough** whose observations are recorded in the commit body — the control row after Reveal, Reset keeping task and Acting-as, the preserved roster and cleared task, and Tab skipping the disabled Reveal before reaching Reset votes and Next task, with focus landing in Task title |
 
 **Red-to-green chain.**
 
@@ -99,10 +100,25 @@ and the deliberately bounded reply.
 | `4416066` test: make reset selection coverage non-vacuous | *"…reselected a voter before asserting, so it never depended on the selection surviving: resetting actingVoterId in handleReset would have kept the suite green."* |
 | `231c309` test: strengthen configurable setup coverage | *"Independent pre-archive review found four assertions that would survive the regression they were meant to catch"* — found while 112 of 112 tests were passing |
 | `a768c5f` test: prove setup validation is pure | the reviewer found `validateSetup` purity required by the specification but never tested |
+| `9a2229c` test: close next-task specification gaps | the reviewer found a behaviour that existed in code and passed its test but was **absent from the specification** — see below |
 
-**What it proves.** This is the practice with the strongest evidence here. **A green suite was twice shown to
-be insufficient** — at `4416066` and again at `231c309`, where 112/112 tests passed and the reviewer still
-found assertions that could not fail. Two independent checker types were used: an automated read-only
+**The clearest case: `9a2229c`.** Before archiving `add-next-task-flow`, every gate was green — 127 tests
+passing, `pnpm check`, `pnpm build`, strict OpenSpec validation and `spec:check` all clean, and a human
+walkthrough completed. The read-only reviewer still found that focus-after-`Next task` was implemented
+(`room.tsx`, threaded through `setup-screen.tsx` and `task-composer.tsx`), was pinned by a passing test, and
+was described in the proposal and design — but was required by **no requirement or scenario** in either delta
+spec. Archiving would have written a user-visible behaviour and a state field into the canonical specs that
+nothing normative mandated.
+
+It followed that task `6.3`, which claims *"no behaviour was implemented that no scenario describes"*, was
+ticked without its second clause having been performed: the maker had checked specification → test and not
+test → specification. The correction added the normative `SHALL` and one scenario, and changed **no
+production code**; a focused re-review then returned PASS.
+
+**What it proves.** This is the practice with the strongest evidence here. **A green suite was three times
+shown to be insufficient** — at `4416066`, at `231c309` where 112/112 tests passed and the reviewer still
+found assertions that could not fail, and at `9a2229c` where every gate was green and the gap was in the
+specification rather than in the code. Two independent checker types were used: an automated read-only
 subagent, and a human walkthrough that caught a defect (`659637a`) no test covered at all.
 
 ---
@@ -112,18 +128,39 @@ subagent, and a human walkthrough that caught a defect (`659637a`) no test cover
 **What was done.** Every feature began as an OpenSpec change — proposal, delta specs, design, tasks —
 committed *before* any implementation commit.
 
-**Specification precedes implementation, in all three changes:**
+**Specification precedes implementation, in all four changes:**
 
 | Specification | Then tests / implementation |
 | --- | --- |
 | `106fb5e` spec: define estimate statistics change | → `7f580d6` test (red) → `7391f7f` feat |
 | `ce067ba` spec: define local round demo | → `010fe0a` feat: add local round state → `d85cbc9` feat: add local planning poker demo |
 | `1d1843a` spec: define configurable round setup | → `8124973` feat: add task setup and round start → `e3c9da3` feat: add configurable participant roster |
+| `7b43eb8` spec: define next-task flow | → the eight-commit chain below |
+
+**The `add-next-task-flow` chain, in full.** It is the most complete record here: specification first, two
+separate red phases each followed by its own implementation, a human walkthrough, a reviewer correction, and
+the archive.
+
+| Commit | Step |
+| --- | --- |
+| `7b43eb8` spec: define next-task flow | proposal, design, two delta specs and tasks — no implementation |
+| `26ce1f3` test: cover the next-task control on the round screen | round-side tests, **red**: 2 failed, 30 passed, both *"Unable to find an accessible element with the role `button` and name `/next task/i`"* |
+| `5f65508` feat: add the next-task control to the revealed round | round-side implementation, green |
+| `bc5b2c9` test: cover the return to setup for the next task | setup-side tests, **red**: 2 failed, 30 passed, on `toHaveValue()` and `toHaveFocus()` |
+| `70c3c12` feat: clear the task and focus the title on the return to setup | setup-side implementation, green |
+| `0a8e2e7` docs: record the next-task manual walkthrough | the human browser and keyboard walkthrough |
+| `9a2229c` test: close next-task specification gaps | the reviewer correction described in §3 — no production code changed |
+| `7fb9423` spec: archive next-task flow | canonical sync: `+ 2` added, `~ 1` modified, `- 0` removed |
+
+Both red commits record why the failure was *behavioural* and not structural — a missing element and a wrong
+state in a rendered component, with `pnpm typecheck` clean — and `bc5b2c9` records honestly that six of its
+eight new tests passed immediately, because the preceding milestone had already delivered that behaviour.
 
 **Archived, with the canonical specs synced:** `56af912` spec: archive estimate statistics change ·
-`806b6e7` spec: archive local round demo · `127fead` spec: archive configurable round setup. The result is
-the four capabilities in [`openspec/specs/`](../openspec/specs/) and three complete change histories in
-[`openspec/changes/archive/`](../openspec/changes/archive/).
+`806b6e7` spec: archive local round demo · `127fead` spec: archive configurable round setup · `7fb9423`
+spec: archive next-task flow. The result is the four capabilities in
+[`openspec/specs/`](../openspec/specs/) and four complete change histories in
+[`openspec/changes/archive/`](../openspec/changes/archive/), with no active change outstanding.
 
 **Specifications changed when evidence contradicted them — they were not decoration:**
 
@@ -136,6 +173,11 @@ the four capabilities in [`openspec/specs/`](../openspec/specs/) and three compl
   delta so that `### Requirement: The room opens on a fixed task and a seeded roster` became
   `### Requirement: The round opens with the configured task and roster`, with all pre-existing scenarios
   preserved.
+- `7b43eb8` narrowed that same requirement again rather than rely on a test that happened to pass. Its
+  scenario forbids any control to *"edit, compose, replace or clear the task"* in **any** state, while the
+  test behind it only queried `/edit|compose|clear task/i` — so a `Next task` control would have left the
+  suite green and the specification false. The rule was scoped to editing *in place while remaining in the
+  round*, with all three pre-existing scenarios kept.
 
 **What it proves.** Specifications were the source of truth and were maintained against it: when reality, a
 design source or a human reviewer contradicted a spec, the spec was revised rather than quietly ignored.
@@ -154,7 +196,7 @@ the file was never written.
 **What it proves.** That the agent's boundaries were examined explicitly at the start, and that a rejected
 proposal was recorded rather than forgotten.
 
-**Scope, stated plainly.** The log covers sessions 01–02 only. It was **not** maintained through the three
+**Scope, stated plainly.** The log covers sessions 01–02 only. It was **not** maintained through the four
 OpenSpec changes that followed, and it must not be read as a full-project autonomy history. The log itself
 carries the same note. The raw per-tool log it originally cited, `.agent-log/actions.jsonl`, is deliberately
 gitignored as local state, so it is not available in a fresh clone; `pnpm agent:log` renders a summary from
@@ -171,8 +213,18 @@ it when it exists locally.
 | **Rejected an invented Observer surname**, requiring the label `Kateryna H.` because the design screenshots truncate it | Wrote the tests, including the red-first ones |
 | Ran the browser walkthroughs, and found the Reveal defect (`659637a`) | Ran the deterministic gates and reported their output |
 | Decided which reviewer findings were blocking and which could be deferred | A separate read-only reviewer subagent challenged the maker's output |
+| **Selected and scoped the next-task feature**, fixing its behaviour before any artifact was written — after Reveal only, roster preserved, task cleared, `Reset votes` unchanged | Explored the codebase and returned the analysis the scope was chosen from |
+| **Approved the specification** before implementation began (`7b43eb8`) | Wrote the proposal, design, delta specs and task list |
+| **Performed the browser and keyboard walkthrough** for `add-next-task-flow` and reported the observations recorded in `0a8e2e7` | Could not drive a browser without adding tooling the working agreement forbids, and said so rather than claiming the check |
+| **Read both reviewer reports, authorized the correction, and authorized the archive** after re-review returned PASS | Verified each blocking finding independently before accepting it, then applied only the authorized correction |
 
 The deterministic gates supplied evidence; they did not replace judgement. `pnpm check` was green at the
-moment the reviewer found a vacuous test (`4416066`) and again when it found four weak assertions
-(`231c309`), and it was a human walkthrough — not a test — that found the Reveal defect. Every decision about
-scope, about which findings blocked an archive, and about what the product should do, was made by the human.
+moment the reviewer found a vacuous test (`4416066`), again when it found four weak assertions (`231c309`),
+and again when it found a specified-nowhere behaviour about to be archived (`9a2229c`); it was a human
+walkthrough — not a test — that found the Reveal defect. Every decision about scope, about which findings
+blocked an archive, and about what the product should do, was made by the human.
+
+One boundary is worth naming plainly: when the browser and keyboard checks came due, no browser automation
+was available, and installing some would have broken the repository's own rule against introducing tooling to
+make something checkable. The agent stopped and asked rather than skipping the check or claiming it — and the
+human ran it. That exchange is why `0a8e2e7` exists as a separate commit.

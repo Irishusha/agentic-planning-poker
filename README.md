@@ -24,9 +24,16 @@ One screen, one browser, one operator driving the whole round:
   add / rename / remove                  [coffee] Away                 Backend  5d 6.5d 8d 3d 2
   validation gates the start             "3 of 6 voted · cards stay    Frontend 3d 3d 3d 0h 1
                                           hidden until the host         Business Analyst — — — — 0
-         |  Start round                   reveals"                      PM       — — — — 0
-         v                                     |  Reveal cards               |  Reset votes
-                                               v                             v
+     |   Start round                      reveals"                      PM       — — — — 0
+     |        |                                |  Reveal cards                    |
+     |        +--------------------------------+--------------------------------->+
+     |                                         ^                                  |
+     |                                         |  Reset votes                     |
+     |                                         |  same task, same team,           |
+     |                                         +--- votes cleared ----------------+
+     |                                                                            |
+     +------------------------ Next task -----------------------------------------+
+       same team preserved · title and description cleared · next round starts fresh
 ```
 
 1. **Setup** — the app opens on a setup screen, prefilled with an example task and a seven-person roster.
@@ -43,8 +50,16 @@ One screen, one browser, one operator driving the whole round:
 5. **Reveal** — available as soon as one voter has acted; it does not wait for everyone, and it does not
    require a numeric estimate. Once shown, the control is disabled so a round cannot be revealed twice.
 6. **Read the results** — Overall plus one row per role.
-7. **Reset** — clears the votes and hides the results, keeping the task, the roster and the acting-voter
-   selection, so the next task can be estimated immediately.
+7. **Reset votes** — repeats the *same* task. It clears every vote and hides the results, keeping the task,
+   the roster and the acting-voter selection, so the same estimate can be re-run immediately. It is available
+   throughout the round.
+8. **Next task** — estimates a *different* task with the same team. It appears only once the cards are
+   revealed, so a round in progress has no way back to setup. Using it returns to the setup screen with the
+   participants, their order, their roles and any Observers exactly as configured, while the task title and
+   description are cleared and every vote, Away state and result is discarded. Focus lands in the task title
+   field, and `Start round` stays unavailable until a new title is entered. The roster can be adjusted before
+   starting, and the next round begins fresh: every voter Waiting, `0 of M voted`, Reveal disabled, and
+   statistics computed from the new round's votes alone.
 
 ## Roles and the Hours deck
 
@@ -126,12 +141,12 @@ generated file.
 
 ## Tests
 
-**113 tests across 9 files**, all passing.
+**128 tests across 9 files**, all passing.
 
 | Area | Files | Tests |
 | --- | --- | --- |
 | Domain (`lib/estimation/`) | `deck` 3 · `duration` 10 · `roles` 1 · `round` 16 · `roster` 19 · `statistics` 13 | 62 |
-| Components (`components/planning-poker/`) | `room` 26 · `setup-screen` 24 | 50 |
+| Components (`components/planning-poker/`) | `room` 33 · `setup-screen` 32 | 65 |
 | Baseline | `lib/health` | 1 |
 
 Domain tests are pure and need no DOM. Component tests drive the real UI through accessible roles and names —
@@ -145,12 +160,13 @@ Behaviour lives in [`openspec/specs/`](openspec/specs/) as four canonical capabi
 | --- | --- | --- | --- |
 | [`estimation-statistics`](openspec/specs/estimation-statistics/spec.md) | 10 | 26 | eligibility, the five measures, per-role and Overall, duration formatting |
 | [`round-state`](openspec/specs/round-state/spec.md) | 5 | 16 | the Hours deck, one active state per voter, the completed count, reset, purity |
-| [`round-screen`](openspec/specs/round-screen/spec.md) | 10 | 25 | the round UI: hidden estimates, reveal, results, reset |
-| [`round-setup`](openspec/specs/round-setup/spec.md) | 9 | 25 | the setup screen: task, roster, validation, starting |
+| [`round-screen`](openspec/specs/round-screen/spec.md) | 11 | 30 | the round UI: hidden estimates, reveal, results, reset, next task |
+| [`round-setup`](openspec/specs/round-setup/spec.md) | 10 | 33 | the setup screen: task, roster, validation, starting, re-entry for the next task |
 
-Three completed changes are archived with their full history — proposal, design, delta specs and task record
+Four completed changes are archived with their full history — proposal, design, delta specs and task record
 — under [`openspec/changes/archive/`](openspec/changes/archive/):
-`2026-09-20-add-estimate-statistics`, `2026-09-20-add-local-round-demo`, `2026-09-20-add-round-setup`.
+`2026-09-20-add-estimate-statistics`, `2026-09-20-add-local-round-demo`, `2026-09-20-add-round-setup`,
+`2026-09-20-add-next-task-flow`. There are **no active changes**.
 
 ## How this was built
 
