@@ -406,3 +406,88 @@ describe("Reset returns the round to hidden", () => {
     expect(revealButton()).toBeEnabled();
   });
 });
+
+const nextTaskButton = () => screen.getByRole("button", { name: /next task/i });
+const queryNextTask = () => screen.queryByRole("button", { name: /next task/i });
+const nextTask = () => fireEvent.click(nextTaskButton());
+
+/** Any control that would leave the round for setup, however it is worded. */
+const querySetupRoute = () =>
+  screen.queryByRole("button", { name: /next task|back to setup|edit setup/i });
+
+describe("Next task leaves the revealed round for setup", () => {
+  it("is absent on an untouched round", () => {
+    renderRound();
+
+    expect(queryNextTask()).toBeNull();
+    expect(revealButton()).toBeInTheDocument();
+    expect(revealButton()).toBeDisabled();
+  });
+
+  it("is absent on a partly voted round that is still hidden", () => {
+    renderRound();
+
+    selectVoter("Serhii Bondar");
+    chooseCard("2d");
+    selectVoter("Iryna Marchenko");
+    chooseCard("?");
+
+    expect(status()).toHaveTextContent("2 of 6 voted");
+    expect(queryNextTask()).toBeNull();
+    expect(revealButton()).toBeEnabled();
+  });
+
+  // The MODIFIED requirement's added guarantee: before Reveal the task and the
+  // roster cannot be changed by any route, not merely by an in-place editor.
+  it("offers no route back to setup while the cards are hidden", () => {
+    renderRound();
+
+    expect(querySetupRoute()).toBeNull();
+    expect(screen.queryByLabelText("Task title")).toBeNull();
+    expect(screen.queryByRole("button", { name: /start round/i })).toBeNull();
+
+    selectVoter("Serhii Bondar");
+    chooseCard("2d");
+
+    expect(querySetupRoute()).toBeNull();
+    expect(screen.queryByLabelText("Task title")).toBeNull();
+    expect(screen.queryByRole("button", { name: /start round/i })).toBeNull();
+  });
+
+  it("appears once the cards are revealed", () => {
+    renderRound();
+    revealMixedRound();
+
+    expect(nextTaskButton()).toBeEnabled();
+    expect(revealButton()).toBeInTheDocument();
+    expect(revealButton()).toBeDisabled();
+    expect(screen.getByRole("button", { name: /reset/i })).toBeEnabled();
+  });
+
+  it("leaves the round when it is used", () => {
+    renderRound();
+    revealMixedRound();
+    nextTask();
+
+    expect(screen.queryByText(/\d+ of \d+ voted/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "5d" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /coffee|back soon/i })).toBeNull();
+    expect(screen.queryByLabelText("Acting as")).toBeNull();
+    expect(screen.queryByRole("button", { name: /reveal/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /reset/i })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Results" })).toBeNull();
+  });
+
+  it("is distinct from Reset votes, which stays in the round", () => {
+    renderRound();
+    revealMixedRound();
+    reset();
+
+    expect(screen.getByText(/Bulk import of candidates from CSV/)).toBeInTheDocument();
+    expect(status()).toHaveTextContent("0 of 6 voted");
+    expect(screen.getByLabelText("Acting as")).toHaveDisplayValue("Anna Kovalenko");
+    expect(screen.queryByLabelText("Task title")).toBeNull();
+    expect(screen.queryByLabelText("Task description")).toBeNull();
+    expect(screen.queryByRole("button", { name: /start round/i })).toBeNull();
+  });
+});
