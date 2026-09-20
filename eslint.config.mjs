@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // Generated design-preview runtime (see design/README.md): reference asset,
+    // not application code, and never imported into app/**.
+    "design/**/*.js",
   ]),
 ]);
 
