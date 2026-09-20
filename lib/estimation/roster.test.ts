@@ -202,3 +202,38 @@ describe("every standing error is reported", () => {
     ).toEqual(["Enter a task title", "Give every participant a name"]);
   });
 });
+
+describe("validation is pure", () => {
+  it("leaves the draft untouched and answers the same way twice", () => {
+    const draft: SetupDraft = {
+      title: "",
+      description: "Rows are matched by email.",
+      participants: [
+        { id: "p-1", name: "Anna Kovalenko", part: "pm" },
+        { id: "p-2", name: "anna kovalenko", part: "qa" },
+        { id: "p-3", name: "Kateryna H.", part: "observer" },
+      ],
+    };
+    // An independent snapshot: a separate literal, not a copy of `draft`.
+    const before: SetupDraft = {
+      title: "",
+      description: "Rows are matched by email.",
+      participants: [
+        { id: "p-1", name: "Anna Kovalenko", part: "pm" },
+        { id: "p-2", name: "anna kovalenko", part: "qa" },
+        { id: "p-3", name: "Kateryna H.", part: "observer" },
+      ],
+    };
+    // Written from the rules, not from the function under test: the title is
+    // empty and two names match ignoring case, reported in the fixed order.
+    const expected = ["Enter a task title", "Participant names must be unique"];
+
+    const first = validateSetup(draft);
+    const second = validateSetup(draft);
+
+    expect(first).toEqual(expected);
+    expect(second).toEqual(first);
+    expect(draft).toEqual(before);
+    expect(draft.participants).toEqual(before.participants);
+  });
+});
