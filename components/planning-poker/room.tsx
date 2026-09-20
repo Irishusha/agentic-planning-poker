@@ -142,6 +142,20 @@ export function Room() {
     setRevealed(false);
   };
 
+  /**
+   * Ends the round and returns to setup for the next task.
+   *
+   * Dropping the round is the whole discard: every estimate, `?` and Away state
+   * lives inside its roster, and the statistics are derived from it per render
+   * rather than stored. `setRevealed(false)` is redundant — `revealed` is
+   * unreadable while `round` is null, and starting resets it — but the rule it
+   * carries is that reveal state does not survive, so the line stays.
+   */
+  const handleNextTask = () => {
+    setRound(null);
+    setRevealed(false);
+  };
+
   return (
     <div className="flex flex-1 flex-col bg-[#0A0A0C] font-sans text-[#ECECF1]">
       <div className="mx-auto flex w-full max-w-[1240px] flex-wrap items-start gap-5 px-4 py-5">
@@ -171,6 +185,7 @@ export function Room() {
             revealed={revealed}
             onReveal={() => setRevealed(true)}
             onReset={handleReset}
+            onNextTask={handleNextTask}
           />
         </main>
 
