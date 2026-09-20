@@ -112,19 +112,21 @@ the run with "No test suite found", which is exactly the structural noise the re
 **A fixed record of role groups, built from the canonical list.** The result is
 `{ overall, byRole: Record<RoleKey, EstimateStatistics> }`, where `byRole` is seeded from `ROLE_KEYS`, so
 every role always has a group and a role nobody voted for reports the empty group rather than being absent.
-`Object.fromEntries` over that mapping is typed `{ [k: string]: EstimateStatistics }`, so the *value* shape is
-checked: seeding a group with anything that is not an `EstimateStatistics` is a compile error. The
-`as Record<RoleKey, EstimateStatistics>` assertion narrows the key type only — it does not statically prove
-that all five keys are present, because TypeScript accepts the conversion on the strength of the overlap
-alone. Key completeness is therefore a run-time property, held by construction (the seeding maps `ROLE_KEYS`
-itself, so it cannot skip a role) and pinned by the test "every supported role has a group, and no other role
-key does". Adding a sixth role to `ROLE_KEYS` flows through that mapping automatically and gains a group with
+`Object.fromEntries` *infers* its value type from the mapped entries rather than checking it against
+`EstimateStatistics`, and the `as Record<RoleKey, EstimateStatistics>` assertion does not independently prove
+that every value carries the complete `EstimateStatistics` shape: an assertion needs only comparability in
+one direction, so a structurally weaker but overlapping value such as `{ votes: 0 }` passes it without a
+compile error. The value-shape guarantee in the current implementation comes from elsewhere — `summarise` is
+annotated to return `EstimateStatistics`, so every seeded group is one by construction. The assertion narrows
+the key type only, and likewise does not statically prove that all five keys are present. Key completeness is
+therefore a run-time construction property, held by mapping `ROLE_KEYS` itself (so the seeding cannot skip a
+role) and pinned by the test "every supported role has a group, and no other role key does". Adding a sixth role to `ROLE_KEYS` flows through that mapping automatically and gains a group with
 no edit here; it does not, and is not meant to, break the build at this site.
 *Alternative rejected:* returning only the roles present in the input — the reveal screen shows one row per
 role, and the caller would have to re-add the empty ones.
 
-**Overall is computed from the eligible entries directly, not from the role groups.** Averaging five role
-averages is a weighted mean and gives the wrong number (for `qa 24h`, `backend 40h`, `frontend 64h` it would
+**Overall is computed from the eligible entries directly, not from the role groups.** The unweighted mean of
+role-level averages gives the wrong number (for `qa 24h`, `backend 40h`, `frontend 64h` it would
 still give `128/3` by luck, but not once one role has two votes). Both Overall and each role group come from
 the same helper applied to a filtered list of hours, which is also what keeps "the role breakdown never
 changes the overall result" true.

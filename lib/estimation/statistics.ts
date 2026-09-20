@@ -88,8 +88,11 @@ export function calculateRoundStatistics(
 
   return {
     overall: summarise(eligible.map((entry) => entry.hours)),
-    // Seeded from the canonical list, so a role nobody voted for still has a group,
-    // and adding a sixth role breaks the build here rather than dropping a group.
+    // Groups are seeded by mapping ROLE_KEYS, so a role nobody voted for still has a
+    // group and a newly added role automatically receives one, with no edit here. The
+    // test "every supported role has a group, and no other role key does" is what
+    // verifies at run time that every supported role is present and no extra key is
+    // returned — the Record<RoleKey, …> assertion below does not prove that.
     byRole: Object.fromEntries(
       ROLE_KEYS.map((role) => [
         role,
