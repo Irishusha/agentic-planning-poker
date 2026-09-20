@@ -3,6 +3,14 @@
 Журнал меж автономності агента в цьому репозиторії: що агент знав, що пропонував,
 які рішення ухвалив користувач і де агент зупиняється, щоб попросити дозвіл.
 
+> **Scope of this log / Межі цього журналу.** It covers **sessions 01–02 only (2026-09-12)**. It was **not**
+> maintained through the OpenSpec changes that followed, so it must **not** be read as a full-project
+> autonomy history. For the practices actually claimed for this project, and the files and commits that
+> evidence them, see [`docs/capstone-evidence.md`](capstone-evidence.md).
+>
+> Цей журнал охоплює **лише сесії 01–02 (2026-09-12)** і не вівся під час подальшої роботи над змінами
+> OpenSpec.
+
 ## Session 01 — 2026-09-12
 
 Стан репозиторію на момент сесії: незмінений скелет create-next-app
@@ -88,9 +96,14 @@ MCP-виклики, shell-команди поза allow-list, встановле
 
 **Результат:** `docs/estimate-example.md` не створено.
 
-**Доказ:** [`actions.jsonl`, рядок 93](../.agent-log/actions.jsonl#L93).
-
-**toolUseID:** `toolu_01AV4QYxFaHfPj639fwy4Usg`.
+**Доказ:** запис у локальному `.agent-log/actions.jsonl` (рядок 93 на момент сесії),
+**toolUseID** `toolu_01AV4QYxFaHfPj639fwy4Usg`.
 
 Наявний `PreToolUse` без парного `PostToolUse` чи `PostToolUseFailure` означає
 «запропоновано, але не виконано».
+
+Сам файл `.agent-log/actions.jsonl` навмисно в `.gitignore` як локальний стан, тому у свіжому
+клоні його немає — посилання на рядок тут не працювало б. Формат полів описано в
+[`.agent-log/README.md`](../.agent-log/README.md); коли лог існує локально, `pnpm agent:log`
+показує зведення, у якому цей запис видно як «proposed but not executed». Незалежний слід у
+репозиторії: файл `docs/estimate-example.md` так і не було створено.
