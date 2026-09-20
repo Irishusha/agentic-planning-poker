@@ -54,7 +54,7 @@ Logo, title, subtitle ("Everyone shows their hand at once"), segmented tabs (Cre
 ### 4.2 Landing — Join existing
 Same, plus **Room ID** field first ("Enter room ID or paste full link"), no scale field, CTA `Join session`.
 
-Roles list (fixed in v1): QA · Back-end developer · Front-end developer · Business analyst · PM.
+Roles list (fixed in v1): QA · Backend · Frontend · Business Analyst · PM.
 Scales: Hours / days (default: 4h · 1d · 2d · 3d · 5d · 8d · 10d · 14d · ? ), Fibonacci, T-shirt.
 Separate **☕ "Stepping out for coffee"** toggle under the card grid — it is a status, not an estimate: excluded from min/avg/max, badge in the list reads "☕ Away".
 
@@ -69,14 +69,15 @@ Separate **☕ "Stepping out for coffee"** toggle under the card grid — it is 
 - Status row: pulsing dot + `N of M voted · cards stay hidden until the host reveals`.
 - Host controls: `Reveal cards` (primary) + `Reset votes` (ghost). Non-host sees only the status line.
 - **Observer**: card grid is replaced by a dashed panel "You joined as an observer — voting is disabled for you." No vote is ever sent for observers; they are excluded from `M`.
-- Sidebar participants are **grouped by role** (QA / Back-end / Front-end / Business analysis / PM) with a `voted/total` counter per group.
+- Sidebar participants are **grouped by role** (QA / Backend / Frontend / Business Analyst / PM) with a `voted/total` counter per group.
 - Badge states: `Waiting` (neutral), `Voted` (bright accent `#241A3A` / border `#6B54A0` / text `#C9A6FF`, value hidden), `☕ Away`, `Observer` (dim).
 
 ### 4.5 Room — revealed
 - Header: "RESULTS" + status chip `Consensus` (green) or `Needs discussion` (accent).
-- Stats tiles: **Lowest** (+ who), **Average**, **Highest** (+ who), **Spread** in scale steps, **Votes** `n/m` (+ observers count).
-- **Per-role rows are the main content** — one row per role (QA / Back-end / Front-end / BA / PM), stacked, so testing and development estimates read as separate numbers on the same task. Fixed three-column rhythm (role `1 1 148px` · track `999 1 190px` · result `0 0 96px`, min-height 52px) so every track has the same width and every result is aligned.
-  - Role colours: QA `#5FD6B4`, Back-end `#B07CFF`, Front-end `#5FA8FF`, Business analyst `#FFB35C`, PM `#FF7EA8` — used only on the row's left border, its markers and its active range. Inactive track stays neutral `#1C1C25`.
+- Stats tiles: **Lowest** (+ who), **Average**, **Highest** (+ who), **Spread** (Highest minus Lowest in canonical hours, shown with the same hours/days formatting), **Votes**
+  (the number of eligible numeric votes; `?`, Away and observers are excluded).
+- **Per-role rows are the main content** — one row per role (QA / Backend / Frontend / Business Analyst / PM), stacked, so testing and development estimates read as separate numbers on the same task. Fixed three-column rhythm (role `1 1 148px` · track `999 1 190px` · result `0 0 96px`, min-height 52px) so every track has the same width and every result is aligned.
+  - Role colours: QA `#5FD6B4`, Backend `#B07CFF`, Frontend `#5FA8FF`, Business Analyst `#FFB35C`, PM `#FF7EA8` — used only on the row's left border, its markers and its active range. Inactive track stays neutral `#1C1C25`.
   - Left: role name (ellipsis + title tooltip) + vote count in the role colour, pluralised `1 vote` / `2 votes`.
   - **Shared linear scale** for every role: `pos = ((value - minScale) / (maxScale - minScale)) * 100`, where minScale/maxScale are the team's lowest and highest votes (in hours).
   - Markers: a filled **circle** per distinct estimate (a value several people picked shows one circle with a small count badge); hovering gives the names, with the extremes labelled `Minimum · …` / `Maximum · …`. The average is a smaller **outlined diamond** at its exact position, tooltip `Average: 6.5d` — deliberately not circle-shaped so it never reads as someone's vote. Active range spans lowest→highest actual vote.

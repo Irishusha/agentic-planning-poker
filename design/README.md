@@ -46,7 +46,7 @@ also refers to the export as `Planning Poker.dc.html`; the file in this director
   neither. Build the Hours deck: `4h · 1d · 2d · 3d · 5d · 8d · 10d · 14d · ?` (hours `4, 8, 16, 24, 40, 64,
   80, 112`).
 - **Observer is a participation mode, not a professional role.** It is chosen at join time and is independent
-  of the role (QA / Back-end / Front-end / Business analysis / PM). Observers get no deck and no Away toggle,
+  of the role (QA / Backend / Frontend / Business Analyst / PM). Observers get no deck and no Away toggle,
   and are excluded from `M` in the `N of M` counter.
 - **Away is a separate toggle, not an estimate card.** The `☕ "Stepping out for coffee"` switch sits under
   the card grid. A voter holds either a card or Away, never both: picking a card clears Away, switching Away

@@ -20,6 +20,9 @@ Read this file and any other instruction file the repository carries (`CLAUDE.md
 user points at) before the first edit. Then look at the real code: directory layout, config files, existing
 conventions, neighbouring code. Prefer evidence from the repository over assumptions about it.
 
+Product rules live in `docs/product-plan.md`; code layout and implementation conventions live in
+`docs/architecture.md`. Read both before writing product code.
+
 ## 2. Plan before multi-file changes
 
 For anything touching more than one file, present a short plan first — which files you intend to change and

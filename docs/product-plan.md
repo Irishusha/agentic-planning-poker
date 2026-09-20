@@ -1,12 +1,13 @@
 # Planning Poker — product plan
 
 What we are building, in what order, and what stays out. Scope and stack decisions only — for how agents work
-in this repository see `AGENTS.md`, for the harness itself see `docs/agent-harness.md`.
+in this repository see `AGENTS.md`, for code layout and implementation conventions see
+`docs/architecture.md`, for the harness itself see `docs/agent-harness.md`.
 
 ## Product goal
 
 A Planning Poker tool for team estimation where every participant carries a role — **QA**, **Backend**,
-**Frontend**, **Business Analysis** or **PM**. The role is not decoration: results are reported per role as
+**Frontend**, **Business Analyst** or **PM**. The role is not decoration: results are reported per role as
 well as overall, so a spread between QA and Backend on the same task is visible immediately and becomes the
 thing the team discusses.
 
@@ -70,7 +71,8 @@ and the participant list do, and observers stay observers, still outside `M`.
    instead.
 5. Votes stay hidden until reveal.
 6. The facilitator reveals the results.
-7. Results show min, max and average over the revealed numeric votes — overall and per role.
+7. Results show Lowest, Average, Highest, Spread and Votes over the revealed numeric votes — overall and
+   per role.
 8. The facilitator resets the round for the next task; the task and the participants stay, every round state —
    votes, `?` and Away — does not.
 
@@ -130,3 +132,42 @@ These hold at every stage and are the first things a test should assert.
   again. The current task and the participant list remain, every voting participant starts the new round in
   Waiting, and observers remain observers, still excluded from `M`.
 - Late joiners can vote until reveal.
+
+### Statistics
+
+Authoritative rules for every statistic the product reports. Stage 1 owns them; later stages carry them
+across a network boundary without redefining them.
+
+**Groups and measures**
+
+- Supported roles are **QA**, **Backend**, **Frontend**, **Business Analyst** and **PM**. These labels are
+  user-facing; the matching internal keys are `qa`, `backend`, `frontend`, `ba` and `pm`.
+- Statistics are calculated separately for every role and as **Overall**.
+- Every group exposes the same five measures: **Lowest**, **Average**, **Highest**, **Spread** and **Votes**.
+- Overall means the same statistics across all eligible numeric votes from all roles. It is not a sum and not
+  a "total estimate".
+- Do not define or calculate a sum of participant estimates.
+
+**Eligibility**
+
+- `?` and Away are excluded from Lowest, Average, Highest, Spread and numeric Votes.
+- When a group has no eligible numeric votes, Lowest, Average, Highest and Spread are unavailable, and Votes
+  is `0`.
+
+**Canonical unit**
+
+- All numeric calculation uses **hours** as the canonical unit.
+- One working day equals **8 hours**.
+- Average is calculated from the unrounded hour values. Intermediate values are never rounded.
+- Display conversion happens only after calculation.
+
+**Display**
+
+- An average below 8 hours is displayed in hours.
+- An average of 8 hours or more is displayed in days, rounded to one decimal place.
+- A trailing `.0` is never displayed.
+- Rounding to one decimal place is ordinary half-up rounding for positive values.
+- Rounding example (arithmetic only): `3d`, `5d` and `6d` give an average of `4.7d`. `6d` is not a card in
+  the MVP Hours deck, so this example fixes the rounding rule only — it is not a reachable MVP voting round.
+- Deck example (reachable): `3d`, `5d` and `8d` give an average of `5.3d`.
+- Spread is Highest minus Lowest in canonical hours, and then follows the same hours/days display convention.
