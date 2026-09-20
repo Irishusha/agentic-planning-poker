@@ -18,3 +18,9 @@ export const offDeckEstimateValue: RoundEntry = { kind: "estimate", role: "qa", 
 
 // @ts-expect-error an Observer takes part in no per-role group, so it carries no role.
 export const observerWithRole: RoundEntry = { kind: "observer", role: "qa" };
+
+// @ts-expect-error an Away participant has not voted, so it carries no estimate.
+export const awayWithEstimate: RoundEntry = { kind: "away", role: "qa", hours: 24 };
+
+// @ts-expect-error an Observer takes part in no group, so it carries no estimate.
+export const observerWithEstimate: RoundEntry = { kind: "observer", hours: 24 };

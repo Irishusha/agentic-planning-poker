@@ -50,6 +50,20 @@ carrying an estimation role — unrepresentable rather than merely invalid.
 - **THEN** the typecheck reports the role key as not assignable to the Observer variant, and the directive is
   consumed rather than reported as unused
 
+#### Scenario: An Away participant cannot carry a numeric estimate
+
+- **WHEN** an Away entry is written with a numeric estimate of `24` hours, in the type-level fixture, on a
+  line preceded by a `@ts-expect-error` directive
+- **THEN** the typecheck reports the estimate as not assignable to the Away variant, and the directive is
+  consumed rather than reported as unused
+
+#### Scenario: An Observer cannot carry a numeric estimate
+
+- **WHEN** an Observer entry is written with a numeric estimate of `24` hours, in the type-level fixture, on
+  a line preceded by a `@ts-expect-error` directive
+- **THEN** the typecheck reports the estimate as not assignable to the Observer variant, and the directive is
+  consumed rather than reported as unused
+
 #### Scenario: An unsupported role key is rejected at compile time
 
 - **WHEN** a numeric-estimate entry is written with the role key `"devops"`, in the type-level fixture, on a
@@ -151,6 +165,17 @@ estimates: it SHALL NOT be affected by how those estimates are distributed acros
   `null` and Votes `0`
 - **AND** the Overall group reports Lowest `24` hours, Average exactly `128/3` hours, Highest `64` hours,
   Spread `40` hours and Votes `3`, over exactly the estimates `24h`, `40h` and `64h`
+
+#### Scenario: Overall is calculated from the estimates, not from the role averages
+
+- **WHEN** statistics are calculated for the entries `qa 24h`, `qa 40h` and `backend 64h`, so that one role
+  holds two eligible estimates and another holds one
+- **THEN** the `qa` group reports Average `32` hours and Votes `2`, and the `backend` group reports Average
+  `64` hours and Votes `1`
+- **AND** the Overall group reports Lowest `24` hours, Average exactly `128/3` hours, Highest `64` hours,
+  Spread `40` hours and Votes `3`, because Overall is calculated from all three eligible estimates together
+  and not from the role-level aggregates — the unweighted mean of the two role Averages would be `48` hours,
+  which the Overall group MUST NOT report
 
 ### Requirement: The calculation is pure
 

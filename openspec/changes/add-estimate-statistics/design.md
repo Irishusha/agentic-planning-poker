@@ -112,8 +112,14 @@ the run with "No test suite found", which is exactly the structural noise the re
 **A fixed record of role groups, built from the canonical list.** The result is
 `{ overall, byRole: Record<RoleKey, EstimateStatistics> }`, where `byRole` is seeded from `ROLE_KEYS`, so
 every role always has a group and a role nobody voted for reports the empty group rather than being absent.
-`Record<RoleKey, …>` also means adding a sixth role to the tuple breaks the build at the seeding site rather
-than silently dropping a group.
+`Object.fromEntries` over that mapping is typed `{ [k: string]: EstimateStatistics }`, so the *value* shape is
+checked: seeding a group with anything that is not an `EstimateStatistics` is a compile error. The
+`as Record<RoleKey, EstimateStatistics>` assertion narrows the key type only — it does not statically prove
+that all five keys are present, because TypeScript accepts the conversion on the strength of the overlap
+alone. Key completeness is therefore a run-time property, held by construction (the seeding maps `ROLE_KEYS`
+itself, so it cannot skip a role) and pinned by the test "every supported role has a group, and no other role
+key does". Adding a sixth role to `ROLE_KEYS` flows through that mapping automatically and gains a group with
+no edit here; it does not, and is not meant to, break the build at this site.
 *Alternative rejected:* returning only the roles present in the input — the reveal screen shows one row per
 role, and the caller would have to re-add the empty ones.
 

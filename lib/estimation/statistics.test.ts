@@ -194,6 +194,30 @@ test("three roles estimate, two do not, and overall spans all three estimates", 
   expect(overall.votes).toBe(3);
 });
 
+// The discriminating fixture for Overall: one role holds two estimates and another
+// holds one, so the unweighted mean of the role Averages — (32 + 64) / 2 = 48 — is a
+// different number from the mean of the estimates, 128/3. A fixture giving every role
+// one vote cannot tell the two apart (see design.md, "Overall is computed from the
+// eligible entries directly").
+test("overall is calculated from the estimates, not from the role averages", () => {
+  const { byRole, overall } = calculateRoundStatistics([
+    { kind: "estimate", role: "qa", hours: 24 },
+    { kind: "estimate", role: "qa", hours: 40 },
+    { kind: "estimate", role: "backend", hours: 64 },
+  ]);
+
+  expect(byRole.qa.averageHours).toBe(32);
+  expect(byRole.qa.votes).toBe(2);
+  expect(byRole.backend.averageHours).toBe(64);
+  expect(byRole.backend.votes).toBe(1);
+
+  expect(overall.lowestHours).toBe(24);
+  expect(overall.averageHours).toBeCloseTo(128 / 3, 10);
+  expect(overall.highestHours).toBe(64);
+  expect(overall.spreadHours).toBe(40);
+  expect(overall.votes).toBe(3);
+});
+
 test("every supported role has a group, and no other role key does", () => {
   const { byRole } = calculateRoundStatistics([
     { kind: "estimate", role: "qa", hours: 24 },
