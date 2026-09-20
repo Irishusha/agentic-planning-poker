@@ -30,9 +30,18 @@ const revealButton = () => screen.getByRole("button", { name: /reveal/i });
 
 const status = () => screen.getByText(/\d+ of \d+ voted/);
 
+/**
+ * The round now begins in setup, so every round test starts the prefilled
+ * example first. Only the entry point moved: no assertion below changed.
+ */
+const renderRound = () => {
+  render(<Room />);
+  fireEvent.click(screen.getByRole("button", { name: /start round/i }));
+};
+
 describe("the room opens on a fixed task and a seeded roster", () => {
   it("shows the task, the six voters, the Observer and an untouched counter", () => {
-    render(<Room />);
+    renderRound();
 
     expect(screen.getByText(/Bulk import of candidates from CSV/)).toBeInTheDocument();
     expect(screen.getByText(/Recruiter uploads a CSV/)).toBeInTheDocument();
@@ -53,7 +62,7 @@ describe("the room opens on a fixed task and a seeded roster", () => {
   });
 
   it("groups the voters by role in the canonical order", () => {
-    render(<Room />);
+    renderRound();
 
     expect(
       participants()
@@ -63,7 +72,7 @@ describe("the room opens on a fixed task and a seeded roster", () => {
   });
 
   it("offers no way to edit the task", () => {
-    render(<Room />);
+    renderRound();
 
     expect(screen.queryByRole("button", { name: /edit|compose|clear task/i })).toBeNull();
     expect(screen.queryByRole("textbox")).toBeNull();
@@ -72,7 +81,7 @@ describe("the room opens on a fixed task and a seeded roster", () => {
 
 describe("the operator chooses which voter is acting", () => {
   it("offers every voter and never the Observer", () => {
-    render(<Room />);
+    renderRound();
 
     expect(
       within(screen.getByLabelText("Acting as"))
@@ -89,7 +98,7 @@ describe("the operator chooses which voter is acting", () => {
   });
 
   it("changes no round state when the acting voter switches", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Dmytro Levchenko");
     chooseCard("5d");
@@ -102,7 +111,7 @@ describe("the operator chooses which voter is acting", () => {
 
 describe("a voter's choice replaces the previous one", () => {
   it("replaces an earlier card with the newer one", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Dmytro Levchenko");
     chooseCard("5d");
@@ -114,7 +123,7 @@ describe("a voter's choice replaces the previous one", () => {
   });
 
   it("clears the chosen card when Away is switched on", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Anna Kovalenko");
     chooseCard("3d");
@@ -126,7 +135,7 @@ describe("a voter's choice replaces the previous one", () => {
   });
 
   it("clears Away when a card is chosen", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Serhii Bondar");
     toggleAway();
@@ -137,7 +146,7 @@ describe("a voter's choice replaces the previous one", () => {
   });
 
   it("returns the voter to Waiting when Away is switched off", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Serhii Bondar");
     toggleAway();
@@ -150,7 +159,7 @@ describe("a voter's choice replaces the previous one", () => {
 
 describe("estimates stay hidden until Reveal", () => {
   it("shows a status instead of any chosen value", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Dmytro Levchenko");
     chooseCard("5d");
@@ -170,7 +179,7 @@ describe("estimates stay hidden until Reveal", () => {
 
 describe("the progress status reports N of M", () => {
   it("counts an estimate, an unsure choice and Away, but not the Observer", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Serhii Bondar");
     chooseCard("2d");
@@ -185,13 +194,13 @@ describe("the progress status reports N of M", () => {
 
 describe("Reveal becomes available after the first completed action", () => {
   it("stays disabled while every voter is waiting", () => {
-    render(<Room />);
+    renderRound();
 
     expect(revealButton()).toBeDisabled();
   });
 
   it("is enabled by an Away voter alone", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Anna Kovalenko");
     toggleAway();
@@ -201,7 +210,7 @@ describe("Reveal becomes available after the first completed action", () => {
   });
 
   it("is enabled by an unsure choice alone", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Iryna Marchenko");
     chooseCard("?");
@@ -210,7 +219,7 @@ describe("Reveal becomes available after the first completed action", () => {
   });
 
   it("is disabled again once the cards are shown", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Serhii Bondar");
     chooseCard("2d");
@@ -260,7 +269,7 @@ const revealMixedRound = () => {
 
 describe("revealed Overall statistics", () => {
   it("reports the five measures over every eligible estimate", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     // 16, 40, 64 and 24 hours: lowest 16, mean 144/4 = 36, highest 64, spread 48.
@@ -268,7 +277,7 @@ describe("revealed Overall statistics", () => {
   });
 
   it("is not the unweighted mean of the role averages", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     // (16 + 52 + 24) / 3 = 92/3 hours, which would display as 3.8d.
@@ -276,7 +285,7 @@ describe("revealed Overall statistics", () => {
   });
 
   it("reports no sum of the estimates", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     // 16 + 40 + 64 + 24 = 144 hours, which would display as 18d.
@@ -285,7 +294,7 @@ describe("revealed Overall statistics", () => {
   });
 
   it("reveals a round in which no estimate is eligible", () => {
-    render(<Room />);
+    renderRound();
 
     selectVoter("Iryna Marchenko");
     chooseCard("?");
@@ -302,7 +311,7 @@ describe("revealed Overall statistics", () => {
 
 describe("revealed per-role statistics", () => {
   it("reports a role that holds two estimates", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     // 40 and 64 hours: lowest 40, mean 104/2 = 52, highest 64, spread 24.
@@ -310,14 +319,14 @@ describe("revealed per-role statistics", () => {
   });
 
   it("reports a role that holds one estimate", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     expect(valuesOf("QA")).toEqual(["2d", "2d", "2d", "0h", "1"]);
   });
 
   it("keeps a role whose only entries are excluded, with no placeholder number", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     expect(valuesOf("Business Analyst")).toEqual(["—", "—", "—", "—", "0"]);
@@ -325,7 +334,7 @@ describe("revealed per-role statistics", () => {
   });
 
   it("lists Overall and the five roles in canonical order", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     expect(
@@ -338,7 +347,7 @@ describe("revealed per-role statistics", () => {
 
 describe("revealed participant values", () => {
   it("shows each participant their own state", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
 
     expect(rowFor("Serhii Bondar")).toHaveTextContent("2d");
@@ -353,7 +362,7 @@ describe("revealed participant values", () => {
 
 describe("Reset returns the round to hidden", () => {
   it("clears the results and every voter back to Waiting", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
     reset();
 
@@ -377,7 +386,7 @@ describe("Reset returns the round to hidden", () => {
   });
 
   it("keeps the acting voter selected so the next round starts at once", () => {
-    render(<Room />);
+    renderRound();
     revealMixedRound();
     reset();
 
