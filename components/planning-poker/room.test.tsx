@@ -381,9 +381,13 @@ describe("Reset returns the round to hidden", () => {
     revealMixedRound();
     reset();
 
-    selectVoter("Serhii Bondar");
+    // revealMixedRound left the PM voter acting; the reset must not change that,
+    // so the card below is chosen without touching the Acting-as control.
+    expect(screen.getByLabelText("Acting as")).toHaveDisplayValue("Anna Kovalenko");
+
     chooseCard("2d");
 
+    expect(rowFor("Anna Kovalenko")).toHaveTextContent("Voted");
     expect(status()).toHaveTextContent("1 of 6 voted");
     expect(revealButton()).toBeEnabled();
   });

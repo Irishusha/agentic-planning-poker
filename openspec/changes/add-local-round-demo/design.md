@@ -133,6 +133,21 @@ header comment marking it demo-only and replaced by the join flow at Stage 3. It
 does not belong in `lib/estimation/`; a named module keeps `room.tsx` readable and lets tests refer to the
 same names the demo shows.
 
+### The operator can see the acting voter's own choice before the reveal
+
+The deck marks the acting voter's held card as pressed, and the Acting-as control can switch to any voter, so
+one operator can read back any voter's pre-reveal choice by selecting them. That relaxes the product plan's
+"votes are hidden from everyone, including the facilitator, until reveal" invariant
+(`docs/product-plan.md`), and it is deliberate: on a single screen with one pointer, showing the acting voter
+their own current choice is the only way the deck can be used at all, and every "voter" here is the same
+person.
+
+The relaxation is bounded to this local puppet demo. The participant list never leaks a value before the
+reveal — an estimate and `?` both read `Voted`, and their badges are styled identically — so the invariant
+still holds for everything the demo presents as another participant's state. Real secrecy across clients is a
+Stage 3 concern and stays out of scope; when each participant has their own device, the acting-voter concept
+disappears along with this control.
+
 ### Reveal and Reset are ungated
 
 A single local screen has one operator, who is the facilitator. Host-versus-participant permission gating

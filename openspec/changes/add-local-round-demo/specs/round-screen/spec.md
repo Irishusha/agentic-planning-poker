@@ -234,5 +234,7 @@ stays selected, so the operator can start the next round without reselecting.
 
 #### Scenario: The round is immediately repeatable
 
-- **WHEN** the QA voter is still the Acting-as selection after that reset, and `2d` is chosen for them
-- **THEN** the progress status reads `1 of 6 voted` and the Reveal control is enabled
+- **WHEN** the PM voter Anna Kovalenko, who was the Acting-as selection when the round was revealed, is still
+  the Acting-as selection after that reset, and `2d` is chosen for them without reselecting anyone
+- **THEN** the PM voter's status is `Voted`, the progress status reads `1 of 6 voted` and the Reveal control
+  is enabled
