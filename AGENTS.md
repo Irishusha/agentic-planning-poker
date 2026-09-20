@@ -76,3 +76,16 @@ Do not pull `.agent-log/actions.jsonl` into the context window — it grows by r
 and is mostly noise. Run `node scripts/agent-log-summary.mjs` instead; it answers the same questions in a few
 lines. A `PreToolUse` hook rewrites raw dumps and reads of that file to the summary, so an attempt to read it
 directly will not return what you asked for.
+
+## 11. OpenSpec changes
+
+OpenSpec is a pinned devDependency and is invoked only as `pnpm exec openspec`, never as a bare `openspec`.
+The workflow itself lives in the generated `openspec-*` skills and in `openspec/config.yaml`; only the three
+rules below change how the rest of this file applies.
+
+- **Inside an approved active OpenSpec change**, its `tasks.md` is the agreed plan. Implement it end to end —
+  §2 is already satisfied by the approval, so do not stop for per-file agreement.
+- **Outside an approved change**, §2 stands unchanged: propose the change and wait for agreement before a
+  multi-file product change.
+- **Archive only** once every task is complete, `pnpm check` is green, and a human has reviewed the change's
+  `## Purpose`.

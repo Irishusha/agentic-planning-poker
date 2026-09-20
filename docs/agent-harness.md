@@ -123,3 +123,18 @@ travel here by copying, not by editing in place, or the next update from the sta
 `.claude/settings.json`, `AGENTS.md` and `.gitignore` are the exception: they are **merged**, not copied,
 because they also carry this project's own rules. `.claude/skills/` is generated output of `pnpm skills:sync`
 from `.agents/skills/` — edit the source, never the copy.
+
+## Skills: portable vs OpenSpec-generated
+
+`.claude/skills/` holds two kinds of entry with two different owners.
+
+- **Portable custom skills** — `agent-log-report`, `vercel-react-best-practices` — live in `.agents/skills/`
+  and are copied into `.claude/skills/` by `pnpm skills:sync`. Edit the source in `.agents/skills/`.
+- **OpenSpec-generated skills** — everything named `openspec-*`, plus the `.openspec-target` marker — are
+  written separately for each tool by `pnpm exec openspec init`. The two copies differ on purpose: the
+  `.agents/` copy tells Codex `$openspec-apply-change`, the `.claude/` copy tells Claude Code `/opsx:apply`.
+
+`skills:sync` therefore skips every `openspec-*` entry and `.openspec-target`, and prints them as
+`skipped … (OpenSpec-managed)`. Without that rule a sync would copy the Codex wording over the Claude one.
+Maintain those skills through `pnpm exec openspec init` / `update` — followed by `pnpm openspec:pin`, since a
+regenerated skill comes back calling a bare `openspec` — never through `skills:sync`.

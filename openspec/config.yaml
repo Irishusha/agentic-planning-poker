@@ -1,0 +1,26 @@
+schema: spec-driven
+
+# Shown to the agent whenever it creates an artifact (proposal, specs, design, tasks).
+context: |
+  Product: a role-segmented Planning Poker application. Every participant carries a role (QA, Backend,
+  Frontend, Business Analyst, PM) and results are reported per role as well as overall.
+  Stack: Next.js 16 App Router, React 19, TypeScript strict, Tailwind 4, Vitest, React Testing Library.
+  pnpm only — never npm, yarn or bun.
+  Product rules: docs/product-plan.md — scope, MVP flow, invariants and the statistics rules.
+  Architecture rules: docs/architecture.md — code layout and implementation conventions.
+  Design precedence and reference assets: design/README.md.
+  Pure domain logic lives in lib/estimation/, with a colocated Vitest test beside each module.
+  React components live in components/planning-poker/.
+  Never import the exported design HTML or design/support.js into application runtime code; the design
+  sources are reference material to rebuild from, not code to copy.
+  OpenSpec CLI: only as `pnpm exec openspec` (pinned devDependency), never a bare `openspec`.
+
+rules:
+  specs:
+    - "Every scenario names concrete input values and the exact expected output, so a test can assert it."
+    - "Requirements are written with SHALL or MUST."
+    - "Statistics scenarios calculate in canonical hours, and state the expected display value wherever a value is shown to a user."
+  tasks:
+    - "Behavioural tests come first. Write the tests for the spec scenarios, run them against the current code, and quote the failing assertion lines before any product implementation task."
+    - "A syntax, import or configuration failure does not count as the required behavioural red state. The test must fail on an assertion about behaviour."
+    - "The last task is `Run pnpm check and quote its summary/result`."
