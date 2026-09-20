@@ -1,0 +1,86 @@
+## 1. Declare the surfaces (no behaviour yet) — milestone 1
+
+The red phase must fail on assertions about behaviour, not on a missing module, so every file and signature
+exists before the tests, with deliberately unimplemented bodies.
+
+`EXAMPLE_SETUP` is the one exception to "no values yet", for the same reason `SEED_ROSTER` was in
+`add-local-round-demo`: it is the fixture the tests assert against, and an empty prefill would leave the
+screen with nothing to render.
+
+- [ ] 1.1 Read the local Next.js guidance on client components and forms under `node_modules/next/dist/docs/01-app` for anything that changes how controlled inputs behave inside a `"use client"` entry point; verify by naming the exact doc file(s) consulted in the task record before any React file is written.
+- [ ] 1.2 Create `lib/estimation/roster.ts` exporting `ParticipantDraft` (`{ readonly id: string; readonly name: string; readonly part: RoleKey | "observer" }`), `SetupDraft` (`{ readonly title: string; readonly description: string; readonly participants: readonly ParticipantDraft[] }`), `RoundTask` (`{ readonly title: string; readonly description: string }`), `validateSetup(draft): readonly string[]` returning `[]`, `buildRoster(draft): readonly Participant[]` returning `[]`, and `buildTask(draft): RoundTask` returning empty strings; verify with `pnpm typecheck` (clean).
+- [ ] 1.3 Convert `components/planning-poker/seed-roster.ts` into the prefill: export `EXAMPLE_SETUP: SetupDraft` holding the existing task title and description and the same seven people as drafts — Serhii Bondar QA, Dmytro Levchenko Backend, Maksym Tkachuk Backend, Olena Shevchuk Frontend, Iryna Marchenko Business Analyst, Anna Kovalenko PM, Kateryna H. Observer — keeping their existing ids and the header comment recording that it is demo-only; verify with `pnpm typecheck` and by confirming six drafts carry a role and one carries `"observer"`.
+- [ ] 1.4 Create the shells `components/planning-poker/setup-screen.tsx`, `task-composer.tsx` and `roster-editor.tsx`, each exporting a typed component that renders an empty element and no product text; verify with `pnpm typecheck` and `pnpm lint` (both clean).
+
+## 2. Task and conversion rules — tests first (red) — milestone 1
+
+Expected values are written independently from the approved decisions, never produced by the code under test.
+
+- [ ] 2.1 Write `lib/estimation/roster.test.ts` for "Roster construction and validation are pure": converting `Serhii Bondar` QA, `Kateryna H.` Observer and `Dmytro Levchenko` Backend yields three participants in that order with entries `{kind:"waiting",role:"qa"}`, `{kind:"observer"}` and `{kind:"waiting",role:"backend"}`, and the ids are carried across; verify by running `pnpm exec vitest run lib/estimation/roster.test.ts` and quoting the failing assertions.
+- [ ] 2.2 Add the purity tests to `lib/estimation/roster.test.ts`: snapshot the draft as an independently written literal, assert it is deeply unchanged after `buildRoster`, and assert two independent calls on an equal draft produce equal rosters; verify by running the file and quoting the failures.
+- [ ] 2.3 Add the title tests to `lib/estimation/roster.test.ts` for "The operator enters the task": an empty title yields exactly `["Enter a task title"]`, a title of three spaces yields the same, an empty description with a non-empty title yields `[]`; verify by running the file and quoting the failures.
+- [ ] 2.4 Add the task-normalisation tests to `lib/estimation/roster.test.ts` for "The operator enters the task": a draft whose title is `  Estimate the CSV import  ` and description `  Rows are matched by email.  ` builds the task `{ title: "Estimate the CSV import", description: "Rows are matched by email." }`; a cleared description builds an empty description; and building the task mutates no field of the supplied draft; verify by running the file and quoting the failing assertions.
+- [ ] 2.5 Confirm the milestone-1 domain red state is behavioural: `pnpm typecheck` passes and the failures are `expected … received …` assertion diffs only, with no module-not-found, syntax or configuration error; verify by quoting one failing assertion line per failing test and the Vitest failure count.
+
+## 3. Task and conversion rules — implement (green) — milestone 1
+
+- [ ] 3.1 Implement `buildRoster`: map each draft in order to a `Participant` carrying the trimmed name and its id, with a voter becoming `{ kind: "waiting", role }` and an Observer becoming `{ kind: "observer" }`, mutating nothing; verify `pnpm exec vitest run lib/estimation/roster.test.ts` shows the conversion and purity tests passing.
+- [ ] 3.2 Implement the title rule in `validateSetup`: a title that is empty once trimmed contributes the message `Enter a task title`, and the description contributes nothing; verify the title tests pass and `pnpm exec vitest run lib/estimation` passes in full.
+- [ ] 3.3 Implement `buildTask`: return the draft's title and description each trimmed of surrounding whitespace, reading the draft and mutating nothing, so the round only ever receives normalised text while the draft keeps what the operator typed; verify `pnpm exec vitest run lib/estimation/roster.test.ts` passes in full.
+
+## 4. Setup screen and the transition — tests first (red) — milestone 1
+
+- [ ] 4.1 Add `components/planning-poker/setup-screen.test.tsx` for "Setup is the application's entry point": opening renders the task title field holding `PP-318 · Bulk import of candidates from CSV`, the description field holding the example description, the seven example names, and an available `Start round` control; verify by running `pnpm exec vitest run components/planning-poker/setup-screen.test.tsx` and quoting the failing assertions.
+- [ ] 4.2 Add the round-absence test for the same requirement: before starting, no estimate card, no Away toggle, no `N of M voted` status, no Reveal control and no Lowest, Average, Highest, Spread or Votes text is present; verify by running the file and quoting the failure.
+- [ ] 4.3 Add the title tests for "The operator enters the task": clearing the title shows `Enter a task title` and makes `Start round` unavailable; a three-space title does the same; clearing the description while the title reads `Estimate the CSV import` shows no message and leaves `Start round` available; verify by running the file and quoting the failures.
+- [ ] 4.4 Add the transition tests for "Starting hands the configured task and roster to the round" (task half) and its second scenario: starting from the prefill shows the round with the example task, and no task title field, description field, participant name field or `Start round` control remains; verify by running the file and quoting the failures.
+- [ ] 4.5 Add the re-enable test for "Validation gates the start and explains itself": clearing the title makes `Start round` unavailable, and typing `Estimate the CSV import` removes the message and makes it available again; verify by running the file and quoting the failure.
+- [ ] 4.6 Add the custom-task test for "Starting hands the configured task and roster to the round": typing the title `  Estimate the CSV import  ` and the description `  Rows are matched by email.  ` and starting shows the round displaying `Estimate the CSV import` and `Rows are matched by email.` with no surrounding space and neither example string; and starting with the description cleared shows the title with no description text; verify by running the file and quoting the failures.
+- [ ] 4.7 Confirm the milestone-1 component red state is behavioural — missing-text, missing-element or wrong-state assertions from a rendered component, never a module, JSX or jsdom configuration error; verify by quoting one failing assertion line per test and the Vitest failure count.
+
+## 5. Setup screen and the transition — implement (green) — milestone 1
+
+- [ ] 5.1 Implement `task-composer.tsx` from `design/spec.md` §4.3: the eyebrow `WHAT ARE WE ESTIMATING?`, a labelled task title input and a labelled description textarea, both controlled from props with no state of its own; verify the prefill and title tests pass.
+- [ ] 5.2 Implement `setup-screen.tsx` composing the task composer, the validation message list rendered so assistive technology reaches it, and the `Start round` button disabled while any message stands; verify the title, message and re-enable tests pass.
+- [ ] 5.3 Add the setup phase to `room.tsx`: hold `phase`, the `SetupDraft` and the id counter in state initialised from `EXAMPLE_SETUP`, compute `validateSetup(draft)` above the JSX, and on start set the roster from `buildRoster(draft)` and the task from `buildTask(draft)`, select the first voter as Acting-as and switch to the round — with no rule computed in a handler or in JSX; verify `pnpm exec vitest run components/planning-poker/setup-screen.test.tsx` passes in full.
+- [ ] 5.4 Migrate the 26 existing tests in `room.test.tsx` to a `renderRound()` helper that renders `<Room />` and clicks `Start round`, changing no assertion; verify `pnpm exec vitest run components/planning-poker` passes in full and `git diff components/planning-poker/room.test.tsx` shows only the helper and the 26 call sites.
+- [ ] 5.5 Apply minimal styling consistent with the design reference — the §4.3 composer panel on the existing dark surfaces, reusing the established token values and 44px-plus controls, with no new token layer and no font import; verify by rendering the app and comparing against `design/screenshots/room-waiting-host.png`, and by `pnpm lint` passing.
+- [ ] 5.6 Verify milestone 1 end to end: run `pnpm check` and `pnpm build`, quote both results, and confirm `git status --short` shows only the intended files; commit as `feat: add task setup and round start`.
+
+## 6. Roster rules — tests first (red) — milestone 2
+
+- [ ] 6.1 Add the name tests to `lib/estimation/roster.test.ts` for "Participant names are trimmed, present and unique": a draft named `  Ivan Petrenko  ` converts to the participant name `Ivan Petrenko`; a draft with an empty name yields the message `Give every participant a name`; a whitespace-only name yields the same; verify by running the file and quoting the failures.
+- [ ] 6.2 Add the uniqueness tests for the same requirement: a roster holding `Anna Kovalenko` and `anna kovalenko` yields `Participant names must be unique`, a roster holding `Anna Kovalenko` and `Anna K.` yields no uniqueness message, and names are compared after trimming; verify by running the file and quoting the failures.
+- [ ] 6.3 Add the voter tests for "A round needs at least one voter": a draft whose participants are all Observers yields `Add at least one voter`, and a draft with exactly one voter yields no such message; verify by running the file and quoting the failures.
+- [ ] 6.4 Add the multi-message test for "Validation gates the start and explains itself": a draft with an empty title and an unnamed participant yields both `Enter a task title` and `Give every participant a name`, in that order; verify by running the file and quoting the failure.
+- [ ] 6.5 Confirm the milestone-2 domain red state is behavioural; verify by quoting one failing assertion line per failing test and the Vitest failure count.
+
+## 7. Roster rules — implement (green) — milestone 2
+
+- [ ] 7.1 Implement the name rules in `validateSetup`: contribute `Give every participant a name` once when any participant's trimmed name is empty, and `Participant names must be unique` once when two trimmed names match ignoring case; verify the name and uniqueness tests pass.
+- [ ] 7.2 Implement the voter rule: contribute `Add at least one voter` when no participant carries a role, and fix the message order as title, names, uniqueness, voters so the rendered list is deterministic; verify `pnpm exec vitest run lib/estimation/roster.test.ts` passes in full, multi-message test included.
+
+## 8. Roster editor — tests first (red) — milestone 2
+
+- [ ] 8.1 Add the editor tests to `setup-screen.test.tsx` for "The operator builds the roster": adding a participant named `Ivan Petrenko` with the role Frontend puts them in the Frontend group after starting; renaming `Serhii Bondar` to `Serhii B.` shows the new name and not the old; changing `Olena Shevchuk` to Backend lists them under Backend; removing `Maksym Tkachuk` leaves the started round reading `0 of 5 voted`; verify by running the file and quoting the failures.
+- [ ] 8.2 Add the offered-parts test for the same requirement: a participant's part control offers exactly QA, Backend, Frontend, Business Analyst, PM and Observer and nothing else; verify by running the file and quoting the failure.
+- [ ] 8.3 Add the Observer tests for "An Observer is configured without a role": adding `Ivan Petrenko` as an Observer leaves the started round at `0 of 6 voted` with the Acting-as control offering neither Observer; removing `Kateryna H.` starts a six-voter round with no Observers group; verify by running the file and quoting the failures.
+- [ ] 8.4 Add the validation-message tests to `setup-screen.test.tsx`: an unnamed added participant shows `Give every participant a name`; adding `anna kovalenko` alongside `Anna Kovalenko` shows `Participant names must be unique`; setting every participant to Observer shows `Add at least one voter`; each makes `Start round` unavailable; and an empty title plus an unnamed participant shows both messages at once; verify by running the file and quoting the failures.
+- [ ] 8.5 Add the trimming and single-voter tests: a participant added as `  Ivan Petrenko  ` with the role PM appears as `Ivan Petrenko` in the PM group after starting; a roster reduced to the one QA participant starts and reads `0 of 1 voted` with only the QA group shown; verify by running the file and quoting the failures.
+- [ ] 8.6 Add the integration test for "Starting hands the configured task and roster to the round" and the modified `round-screen` scenario "A role nobody was configured for is not shown": configure `Serhii Bondar` QA and `Dmytro Levchenko` Backend with the title `Estimate the CSV import`, start, confirm `0 of 2 voted` with `Serhii Bondar` acting, vote `2d` and `5d`, reveal, and assert the sidebar shows only QA and Backend groups while the results show Overall `2d / 3.5d / 5d / 3d / 2` — 16 and 40 hours, mean 56/2 = 28 hours — with Frontend, Business Analyst and PM each `—` and `0`; verify by running the file and quoting the failures.
+- [ ] 8.7 Confirm the milestone-2 component red state is behavioural; verify by quoting one failing assertion line per test and the Vitest failure count.
+
+## 9. Roster editor — implement (green) — milestone 2
+
+- [ ] 9.1 Implement `roster-editor.tsx`: one row per participant with a labelled name input, a labelled part select offering the five roles and Observer, and a remove control whose accessible name identifies the participant, plus an `Add participant` control — all controlled from props, holding no state; verify the editor, offered-parts and Observer tests pass.
+- [ ] 9.2 Wire the roster editor into `room.tsx`'s draft state: add appends a draft with an empty name, the role QA and the next `p-<n>` id from the counter; edit, part change and remove replace the draft list immutably, with no rule computed in a handler; verify `pnpm exec vitest run components/planning-poker/setup-screen.test.tsx` passes in full.
+- [ ] 9.3 Hide empty groups in `participant-list.tsx`: render only role groups holding at least one participant, and omit the Observers group when no Observer is configured, leaving `round-results.tsx` untouched so all five role rows still appear; verify the integration test passes and `pnpm exec vitest run components/planning-poker` passes in full, the 26 migrated round assertions included.
+- [ ] 9.4 Style the roster editor on the existing dark surfaces in the sidebar slot the design gives the "Waiting for the team" panel, reusing the established tokens and 44px-plus controls; verify by rendering the app, comparing against `design/screenshots/room-waiting-host.png` and `landing-create.png` for field shapes, and by `pnpm lint` passing.
+
+## 10. Verify the whole change
+
+- [ ] 10.1 Confirm the change stayed in scope: `git status --short` and `git diff --stat` show only `lib/estimation/roster.ts`, its test, `components/planning-poker/**`, and `openspec/changes/add-round-setup/**` — with no new dependency, no config change, no edit to `deck.ts`, `round.ts`, `roles.ts`, `statistics.ts`, `duration.ts` or their tests, no change to `app/**`, and nothing imported from `design/`.
+- [ ] 10.2 Re-read both delta specs and confirm every scenario has a matching passing test, that the modified `round-screen` requirement's three scenarios are all covered, and that no behaviour was added that no scenario describes; verify by listing each scenario against its test name.
+- [ ] 10.3 Walk the flow once in the browser with `pnpm dev`: open `/`, edit the title, add and remove a participant, set one to Observer, trigger and clear a validation error, start the round, vote, reveal, read the Overall and per-role numbers and reset; verify by recording the observed messages, `N of M` values and revealed figures in the task record.
+- [ ] 10.4 Run `pnpm build` and quote its result.
+- [ ] 10.5 Run `pnpm check` and quote its summary/result.
