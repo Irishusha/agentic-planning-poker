@@ -426,3 +426,214 @@ describe("a custom roster reaches the round and its statistics", () => {
     expect(valuesOf("PM")).toEqual(["—", "—", "—", "—", "0"]);
   });
 });
+
+const selectVoter = (name: string) => {
+  const select = screen.getByLabelText("Acting as");
+  const option = within(select).getByRole<HTMLOptionElement>("option", { name });
+
+  fireEvent.change(select, { target: { value: option.value } });
+};
+
+const chooseCard = (label: string) =>
+  fireEvent.click(screen.getByRole("button", { name: label }));
+const toggleAway = () =>
+  fireEvent.click(screen.getByRole("button", { name: /coffee|back soon/i }));
+const reveal = () =>
+  fireEvent.click(screen.getByRole("button", { name: /reveal/i }));
+const nextTask = () =>
+  fireEvent.click(screen.getByRole("button", { name: /next task/i }));
+const progress = () => screen.getByText(/\d+ of \d+ voted/);
+
+/**
+ * The configured names in the order the roster editor lists them, read from the
+ * name fields themselves so a reordering cannot pass unnoticed.
+ */
+const draftNames = () =>
+  screen
+    .getAllByRole("textbox")
+    .filter((field) => field.getAttribute("aria-label")?.startsWith("Name for "))
+    .map((field) => (field as HTMLInputElement).value);
+
+/** The configured parts in the same order; the part selects are the only ones. */
+const draftParts = () =>
+  screen
+    .getAllByRole("combobox")
+    .map((select) => (select as HTMLSelectElement).value);
+
+const EXAMPLE_PARTS = [
+  "qa",
+  "backend",
+  "backend",
+  "frontend",
+  "ba",
+  "pm",
+  "observer",
+];
+
+/** Reveals the prefilled example round so it can be left with `Next task`. */
+const revealExampleRound = () => {
+  start();
+  selectVoter("Serhii Bondar");
+  chooseCard("2d");
+  selectVoter("Anna Kovalenko");
+  toggleAway();
+  reveal();
+};
+
+describe("setup is re-entered for the next task with the same team", () => {
+  it("keeps the team and clears the task", () => {
+    render(<Room />);
+    revealExampleRound();
+    nextTask();
+
+    expect(draftNames()).toEqual(EXAMPLE_NAMES);
+    expect(draftParts()).toEqual(EXAMPLE_PARTS);
+    expect(titleField()).toHaveValue("");
+    expect(descriptionField()).toHaveValue("");
+    expect(screen.getByText("Enter a task title")).toBeInTheDocument();
+    expect(startButton()).toBeDisabled();
+  });
+
+  it("re-enables the start on a new title alone", () => {
+    render(<Room />);
+    revealExampleRound();
+    nextTask();
+
+    type(titleField(), "PP-319 Duplicate candidate merge");
+
+    expect(screen.queryByText("Enter a task title")).toBeNull();
+    expect(startButton()).toBeEnabled();
+  });
+
+  it("lets the preserved roster be adjusted before starting", () => {
+    render(<Room />);
+    revealExampleRound();
+    nextTask();
+
+    fireEvent.click(removeButton("Maksym Tkachuk"));
+    fireEvent.change(partSelect("Olena Shevchuk"), {
+      target: { value: "observer" },
+    });
+    type(titleField(), "PP-319 Duplicate candidate merge");
+    start();
+
+    expect(progress()).toHaveTextContent("0 of 4 voted");
+    expect(rowFor("Olena Shevchuk")).toHaveTextContent("Observer");
+    expect(screen.queryByText("Maksym Tkachuk")).toBeNull();
+  });
+
+  it("starts the next round carrying nothing from the previous one", () => {
+    render(<Room />);
+    start();
+    selectVoter("Serhii Bondar");
+    chooseCard("2d");
+    selectVoter("Dmytro Levchenko");
+    chooseCard("5d");
+    selectVoter("Iryna Marchenko");
+    chooseCard("?");
+    selectVoter("Anna Kovalenko");
+    toggleAway();
+    reveal();
+    nextTask();
+
+    type(titleField(), "PP-319 Duplicate candidate merge");
+    start();
+
+    for (const name of EXAMPLE_NAMES.slice(0, 6)) {
+      expect(rowFor(name)).toHaveTextContent("Waiting");
+    }
+
+    expect(progress()).toHaveTextContent("0 of 6 voted");
+    expect(screen.queryByRole("region", { name: "Results" })).toBeNull();
+    expect(screen.getByRole("button", { name: /reveal/i })).toBeDisabled();
+    expect(screen.getByText("PP-319 Duplicate candidate merge")).toBeInTheDocument();
+    expect(screen.queryByText(/Bulk import of candidates from CSV/)).toBeNull();
+
+    for (const carried of ["2d", "5d", "?", "Away"]) {
+      expect(participantsRegion().queryByText(carried)).toBeNull();
+    }
+  });
+
+  it("selects the first voter of the roster as it now stands", () => {
+    render(<Room />);
+    revealExampleRound();
+    nextTask();
+
+    fireEvent.click(removeButton("Serhii Bondar"));
+    type(titleField(), "PP-319 Duplicate candidate merge");
+    start();
+
+    const actingAs = screen.getByLabelText("Acting as");
+
+    expect(actingAs).toHaveDisplayValue("Dmytro Levchenko");
+    expect(
+      within(actingAs)
+        .getAllByRole("option")
+        .map((option) => option.textContent),
+    ).not.toContain("Serhii Bondar");
+  });
+
+  // If the participant-id sequence restarted, the added row would share an id
+  // with Ivan Petrenko and naming one would rename the other.
+  it("adds a participant that is separate from every preserved one", () => {
+    render(<Room />);
+
+    addParticipant();
+    type(screen.getByLabelText("Name for participant 8"), "Ivan Petrenko");
+    fireEvent.change(partSelect("Ivan Petrenko"), {
+      target: { value: "frontend" },
+    });
+    revealExampleRound();
+    nextTask();
+
+    addParticipant();
+    type(screen.getByLabelText("Name for participant 9"), "Yulia Popova");
+
+    expect(draftNames()).toEqual([
+      ...EXAMPLE_NAMES,
+      "Ivan Petrenko",
+      "Yulia Popova",
+    ]);
+    expect(partSelect("Ivan Petrenko")).toHaveValue("frontend");
+  });
+
+  it("puts focus in the task title field", () => {
+    render(<Room />);
+    revealExampleRound();
+    nextTask();
+
+    expect(titleField()).toHaveFocus();
+  });
+
+  it("reports the next round's statistics over the next round's votes alone", () => {
+    render(<Room />);
+    start();
+    selectVoter("Serhii Bondar");
+    chooseCard("2d");
+    selectVoter("Dmytro Levchenko");
+    chooseCard("8d");
+    reveal();
+    nextTask();
+
+    type(titleField(), "PP-319 Duplicate candidate merge");
+    start();
+    selectVoter("Serhii Bondar");
+    chooseCard("3d");
+    selectVoter("Olena Shevchuk");
+    chooseCard("5d");
+    reveal();
+
+    const results = within(screen.getByRole("region", { name: "Results" }));
+    const valuesOf = (label: string) =>
+      within(results.getByRole("row", { name: (n) => n.startsWith(label) }))
+        .getAllByRole("cell")
+        .map((cell) => cell.textContent);
+
+    // 24 and 40 hours: lowest 24, mean 64/2 = 32, highest 40, spread 16.
+    expect(valuesOf("Overall")).toEqual(["3d", "4d", "5d", "2d", "2"]);
+    expect(valuesOf("QA")).toEqual(["3d", "3d", "3d", "0h", "1"]);
+    expect(valuesOf("Frontend")).toEqual(["5d", "5d", "5d", "0h", "1"]);
+    // The first round's 64 hours from Dmytro Levchenko is not carried over.
+    expect(valuesOf("Backend")).toEqual(["—", "—", "—", "—", "0"]);
+  });
+});
