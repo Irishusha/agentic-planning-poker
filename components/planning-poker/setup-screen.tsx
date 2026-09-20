@@ -12,6 +12,7 @@ type SetupScreenProps = {
   readonly onRemoveParticipant: (id: string) => void;
   readonly onAddParticipant: () => void;
   readonly onStart: () => void;
+  readonly autoFocusTitle: boolean;
 };
 
 /**
@@ -31,6 +32,7 @@ export function SetupScreen({
   onRemoveParticipant,
   onAddParticipant,
   onStart,
+  autoFocusTitle,
 }: SetupScreenProps) {
   return (
     <div className="flex flex-1 flex-col bg-[#0A0A0C] font-sans text-[#ECECF1]">
@@ -41,6 +43,7 @@ export function SetupScreen({
             description={draft.description}
             onTitleChange={onTitleChange}
             onDescriptionChange={onDescriptionChange}
+            autoFocusTitle={autoFocusTitle}
           />
 
           {messages.length > 0 ? (

@@ -56,6 +56,11 @@ export function Room() {
   const [round, setRound] = useState<Round | null>(null);
   const [actingVoterId, setActingVoterId] = useState("");
   const [revealed, setRevealed] = useState(false);
+  // Presentation only: setup was reached by leaving a round rather than by
+  // opening the application, so the title field takes focus. The control that
+  // caused the transition unmounts with the round, and focus would otherwise
+  // fall to the document body.
+  const [returnedToSetup, setReturnedToSetup] = useState(false);
 
   const messages = validateSetup(draft);
 
@@ -65,6 +70,7 @@ export function Room() {
     setRound({ task: buildTask(draft), roster });
     setActingVoterId(roster.filter(isVoter)[0].id);
     setRevealed(false);
+    setReturnedToSetup(false);
   };
 
   const updateParticipant = (
@@ -110,6 +116,7 @@ export function Room() {
         }
         onAddParticipant={handleAddParticipant}
         onStart={handleStart}
+        autoFocusTitle={returnedToSetup}
       />
     );
   }
@@ -150,10 +157,16 @@ export function Room() {
    * rather than stored. `setRevealed(false)` is redundant — `revealed` is
    * unreadable while `round` is null, and starting resets it — but the rule it
    * carries is that reveal state does not survive, so the line stays.
+   *
+   * The draft keeps its participants: the team does not change because the task
+   * did. Only the two task fields are cleared, and the id counter is left alone
+   * so a participant added afterwards cannot collide with a preserved one.
    */
   const handleNextTask = () => {
+    setDraft((current) => ({ ...current, title: "", description: "" }));
     setRound(null);
     setRevealed(false);
+    setReturnedToSetup(true);
   };
 
   return (

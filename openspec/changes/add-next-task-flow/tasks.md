@@ -39,9 +39,9 @@ and focus is lost, so each assertion below fails on behaviour.
 
 ## 5. The return to setup — implement (green) — milestone 2
 
-- [ ] 5.1 Extend `handleNextTask` in `room.tsx` with the functional draft update `setDraft((current) => ({ ...current, title: "", description: "" }))`, leaving `current.participants`, `nextId` and `EXAMPLE_SETUP` untouched, and computing no rule in the handler; verify the tests in 4.1–4.6 and 4.8 pass.
-- [ ] 5.2 Add the focus flag: hold one boolean in `room.tsx`, set it when `Next task` is used and clear it when a round starts, thread it through `setup-screen.tsx` to `task-composer.tsx` as the title input's `autoFocus`, and leave it false at mount so the application's entry point keeps its current behaviour; verify the test in 4.7 passes and the existing entry-point test `opens prefilled with the example task and roster` still passes.
-- [ ] 5.3 Confirm no calculation or validation rule was duplicated: the next round is built through the existing `validateSetup`, `buildTask` and `buildRoster` calls with no second code path, and `git diff --stat lib/` is empty; verify by quoting the diff stat and by `pnpm exec vitest run lib/estimation` passing unchanged.
+- [x] 5.1 Extend `handleNextTask` in `room.tsx` with the functional draft update `setDraft((current) => ({ ...current, title: "", description: "" }))`, leaving `current.participants`, `nextId` and `EXAMPLE_SETUP` untouched, and computing no rule in the handler; verify the tests in 4.1–4.6 and 4.8 pass.
+- [x] 5.2 Add the focus flag: hold one boolean in `room.tsx`, set it when `Next task` is used and clear it when a round starts, thread it through `setup-screen.tsx` to `task-composer.tsx` as the title input's `autoFocus`, and leave it false at mount so the application's entry point keeps its current behaviour; verify the test in 4.7 passes and the existing entry-point test `opens prefilled with the example task and roster` still passes.
+- [x] 5.3 Confirm no calculation or validation rule was duplicated: the next round is built through the existing `validateSetup`, `buildTask` and `buildRoster` calls with no second code path, and `git diff --stat lib/` is empty; verify by quoting the diff stat and by `pnpm exec vitest run lib/estimation` passing unchanged.
 
 ## 6. Verify the whole change
 

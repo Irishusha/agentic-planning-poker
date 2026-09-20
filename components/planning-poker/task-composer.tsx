@@ -3,6 +3,7 @@ type TaskComposerProps = {
   readonly description: string;
   readonly onTitleChange: (title: string) => void;
   readonly onDescriptionChange: (description: string) => void;
+  readonly autoFocusTitle: boolean;
 };
 
 const FIELD =
@@ -14,12 +15,17 @@ const FIELD =
  * Both fields are labelled for assistive technology; the labels are visually
  * hidden because the design carries their meaning in the panel eyebrow and the
  * placeholders.
+ *
+ * The title takes focus only when setup was reached by leaving a round, where
+ * the control that caused the transition unmounted and focus would otherwise be
+ * lost. Opening the application focuses nothing, as before.
  */
 export function TaskComposer({
   title,
   description,
   onTitleChange,
   onDescriptionChange,
+  autoFocusTitle,
 }: TaskComposerProps) {
   return (
     <section className="flex flex-col gap-4">
@@ -34,6 +40,7 @@ export function TaskComposer({
         <input
           id="task-title"
           type="text"
+          autoFocus={autoFocusTitle}
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
           placeholder="Task title — e.g. PP-318 Bulk import of candidates"
