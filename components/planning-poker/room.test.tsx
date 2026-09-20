@@ -82,6 +82,22 @@ describe("the room opens on a fixed task and a seeded roster", () => {
     expect(screen.queryByRole("button", { name: /add participant/i })).toBeNull();
     expect(screen.queryAllByRole("button", { name: /^Remove/i })).toHaveLength(0);
   });
+
+  // The requirement freezes the task and the roster "in any of its states", and
+  // the revealed state is the one this change added a control to. Next task
+  // ends the round rather than editing it, so nothing here may loosen.
+  it("offers no way to edit the task or the roster once the cards are revealed", () => {
+    renderRound();
+    revealMixedRound();
+
+    expect(screen.queryByRole("button", { name: /edit|compose|clear task/i })).toBeNull();
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.queryByLabelText("Task title")).toBeNull();
+    expect(screen.queryByLabelText("Task description")).toBeNull();
+    expect(screen.queryByRole("button", { name: /add participant/i })).toBeNull();
+    expect(screen.queryAllByRole("button", { name: /^Remove/i })).toHaveLength(0);
+    expect(screen.queryAllByRole("combobox")).toHaveLength(0);
+  });
 });
 
 describe("the operator chooses which voter is acting", () => {

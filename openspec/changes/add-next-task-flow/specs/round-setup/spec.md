@@ -11,6 +11,10 @@ task the application opens on, and not left holding the task just estimated. Bec
 message `Enter a task title` SHALL be shown and the `Start round` control SHALL be unavailable until a title
 that is non-blank once trimmed is entered.
 
+Keyboard focus SHALL be placed in the task title field when that setup screen is shown. The control the
+operator activated is gone with the round, so focus would otherwise be lost, and the title is the one field
+that must be filled before the next round can start.
+
 The preserved roster SHALL be editable again before the next round starts: a participant MAY be added,
 renamed, given a different part or removed, under exactly the same validation rules that gate any other
 start. A participant added after the return SHALL be a separate participant from every preserved one, so
@@ -32,6 +36,13 @@ round's statistics SHALL be calculated from the next round's estimates alone.
 - **AND** the task title field and the task description field are both empty, holding neither
   `PP-318 · Bulk import of candidates from CSV` nor the example description
 - **AND** the message `Enter a task title` is shown and the `Start round` control is unavailable
+
+#### Scenario: Focus moves to the next task title
+
+- **WHEN** the prefilled example round is revealed with `Serhii Bondar` on `2d` and `Anna Kovalenko` Away, and
+  the operator activates `Next task`
+- **THEN** the setup screen is shown and keyboard focus is in the `Task title` field, which is empty, so the
+  next task's title can be typed without first clicking into it
 
 #### Scenario: A new title alone re-enables the start
 
