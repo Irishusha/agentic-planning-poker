@@ -33,9 +33,23 @@ export type RoundTask = {
  */
 export function validateSetup(draft: SetupDraft): readonly string[] {
   const messages: string[] = [];
+  const names = draft.participants.map((participant) => participant.name.trim());
 
   if (draft.title.trim() === "") {
     messages.push("Enter a task title");
+  }
+
+  if (names.some((name) => name === "")) {
+    messages.push("Give every participant a name");
+  }
+
+  const folded = names.map((name) => name.toLowerCase());
+  if (new Set(folded).size !== folded.length) {
+    messages.push("Participant names must be unique");
+  }
+
+  if (!draft.participants.some((participant) => participant.part !== "observer")) {
+    messages.push("Add at least one voter");
   }
 
   return messages;

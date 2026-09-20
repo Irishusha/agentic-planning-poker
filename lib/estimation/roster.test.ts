@@ -110,3 +110,95 @@ describe("the task is normalised when the round starts", () => {
     expect(draft.description).toBe("Rows are matched by email.");
   });
 });
+
+describe("participant names are present and unique", () => {
+  it("reports a participant with no name", () => {
+    expect(
+      validateSetup(
+        draftOf([
+          { id: "p-1", name: "Serhii Bondar", part: "qa" },
+          { id: "p-2", name: "", part: "backend" },
+        ]),
+      ),
+    ).toEqual(["Give every participant a name"]);
+  });
+
+  it("reports a whitespace-only name", () => {
+    expect(
+      validateSetup(
+        draftOf([
+          { id: "p-1", name: "Serhii Bondar", part: "qa" },
+          { id: "p-2", name: "   ", part: "backend" },
+        ]),
+      ),
+    ).toEqual(["Give every participant a name"]);
+  });
+
+  it("reports two names that differ only by case", () => {
+    expect(
+      validateSetup(
+        draftOf([
+          { id: "p-1", name: "Anna Kovalenko", part: "qa" },
+          { id: "p-2", name: "anna kovalenko", part: "backend" },
+        ]),
+      ),
+    ).toEqual(["Participant names must be unique"]);
+  });
+
+  it("compares names after trimming", () => {
+    expect(
+      validateSetup(
+        draftOf([
+          { id: "p-1", name: "  Anna Kovalenko  ", part: "qa" },
+          { id: "p-2", name: "Anna Kovalenko", part: "backend" },
+        ]),
+      ),
+    ).toEqual(["Participant names must be unique"]);
+  });
+
+  it("accepts two distinct names", () => {
+    expect(
+      validateSetup(
+        draftOf([
+          { id: "p-1", name: "Anna Kovalenko", part: "qa" },
+          { id: "p-2", name: "Anna K.", part: "backend" },
+        ]),
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe("a round needs at least one voter", () => {
+  it("reports a roster of Observers only", () => {
+    expect(
+      validateSetup(
+        draftOf([
+          { id: "p-1", name: "Serhii Bondar", part: "observer" },
+          { id: "p-2", name: "Kateryna H.", part: "observer" },
+        ]),
+      ),
+    ).toEqual(["Add at least one voter"]);
+  });
+
+  it("accepts exactly one voter", () => {
+    expect(
+      validateSetup(draftOf([{ id: "p-1", name: "Serhii Bondar", part: "qa" }])),
+    ).toEqual([]);
+  });
+});
+
+describe("every standing error is reported", () => {
+  it("reports the title and the name together, in a fixed order", () => {
+    expect(
+      validateSetup(
+        draftOf(
+          [
+            { id: "p-1", name: "Serhii Bondar", part: "qa" },
+            { id: "p-2", name: "", part: "backend" },
+          ],
+          { title: "" },
+        ),
+      ),
+    ).toEqual(["Enter a task title", "Give every participant a name"]);
+  });
+});

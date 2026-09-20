@@ -1,4 +1,5 @@
-import type { SetupDraft } from "@/lib/estimation/roster";
+import type { ParticipantDraft, SetupDraft } from "@/lib/estimation/roster";
+import { RosterEditor } from "./roster-editor";
 import { TaskComposer } from "./task-composer";
 
 type SetupScreenProps = {
@@ -6,6 +7,10 @@ type SetupScreenProps = {
   readonly messages: readonly string[];
   readonly onTitleChange: (title: string) => void;
   readonly onDescriptionChange: (description: string) => void;
+  readonly onNameChange: (id: string, name: string) => void;
+  readonly onPartChange: (id: string, part: ParticipantDraft["part"]) => void;
+  readonly onRemoveParticipant: (id: string) => void;
+  readonly onAddParticipant: () => void;
   readonly onStart: () => void;
 };
 
@@ -21,6 +26,10 @@ export function SetupScreen({
   messages,
   onTitleChange,
   onDescriptionChange,
+  onNameChange,
+  onPartChange,
+  onRemoveParticipant,
+  onAddParticipant,
   onStart,
 }: SetupScreenProps) {
   return (
@@ -63,16 +72,13 @@ export function SetupScreen({
           <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#7A7A8C]">
             Participants
           </h2>
-          <ul className="flex flex-col gap-2">
-            {draft.participants.map((participant) => (
-              <li
-                key={participant.id}
-                className="rounded-[12px] border border-[#22222C] bg-[#0E0E13] px-3 py-2.5 text-[14.5px] text-[#ECECF1]"
-              >
-                {participant.name}
-              </li>
-            ))}
-          </ul>
+          <RosterEditor
+            participants={draft.participants}
+            onNameChange={onNameChange}
+            onPartChange={onPartChange}
+            onRemove={onRemoveParticipant}
+            onAdd={onAddParticipant}
+          />
         </aside>
       </div>
     </div>

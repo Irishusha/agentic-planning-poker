@@ -14,6 +14,7 @@ import {
   buildRoster,
   buildTask,
   validateSetup,
+  type ParticipantDraft,
   type RoundTask,
   type SetupDraft,
 } from "@/lib/estimation/roster";
@@ -51,6 +52,7 @@ type Round = {
  */
 export function Room() {
   const [draft, setDraft] = useState<SetupDraft>(EXAMPLE_SETUP);
+  const [nextId, setNextId] = useState(1);
   const [round, setRound] = useState<Round | null>(null);
   const [actingVoterId, setActingVoterId] = useState("");
   const [revealed, setRevealed] = useState(false);
@@ -65,6 +67,28 @@ export function Room() {
     setRevealed(false);
   };
 
+  const updateParticipant = (
+    id: string,
+    change: Partial<ParticipantDraft>,
+  ) =>
+    setDraft((current) => ({
+      ...current,
+      participants: current.participants.map((participant) =>
+        participant.id === id ? { ...participant, ...change } : participant,
+      ),
+    }));
+
+  const handleAddParticipant = () => {
+    setDraft((current) => ({
+      ...current,
+      participants: [
+        ...current.participants,
+        { id: `p-${nextId}`, name: "", part: "qa" },
+      ],
+    }));
+    setNextId((current) => current + 1);
+  };
+
   if (round === null) {
     return (
       <SetupScreen
@@ -74,6 +98,17 @@ export function Room() {
         onDescriptionChange={(description) =>
           setDraft((current) => ({ ...current, description }))
         }
+        onNameChange={(id, name) => updateParticipant(id, { name })}
+        onPartChange={(id, part) => updateParticipant(id, { part })}
+        onRemoveParticipant={(id) =>
+          setDraft((current) => ({
+            ...current,
+            participants: current.participants.filter(
+              (participant) => participant.id !== id,
+            ),
+          }))
+        }
+        onAddParticipant={handleAddParticipant}
         onStart={handleStart}
       />
     );

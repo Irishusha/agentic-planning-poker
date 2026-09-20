@@ -66,13 +66,16 @@ function Row({
 
 /** The roster, grouped by role, with Observers listed outside the voting groups. */
 export function ParticipantList({ roster, revealed }: ParticipantListProps) {
+  // Only the roles somebody was configured for are listed, so the sidebar shows
+  // the team in the room rather than the five roles the product supports. The
+  // results table is deliberately the other way round: it always reports all five.
   const groups = ROLE_KEYS.map((role) => ({
     role,
     members: roster.filter(
       (participant) =>
         participant.entry.kind !== "observer" && participant.entry.role === role,
     ),
-  }));
+  })).filter((group) => group.members.length > 0);
   const observers = roster.filter(
     (participant) => participant.entry.kind === "observer",
   );
@@ -102,6 +105,7 @@ export function ParticipantList({ roster, revealed }: ParticipantListProps) {
         </div>
       ))}
 
+      {observers.length > 0 ? (
       <div className="flex flex-col gap-2">
         <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#63637A]">
           Observers
@@ -112,6 +116,7 @@ export function ParticipantList({ roster, revealed }: ParticipantListProps) {
           ))}
         </ul>
       </div>
+      ) : null}
     </section>
   );
 }
