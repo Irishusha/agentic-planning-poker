@@ -113,7 +113,9 @@ The Reveal control SHALL be present at all times and SHALL be disabled while eve
 become enabled as soon as at least one voter holds a numeric estimate, `?` or Away — any one of the three
 completes a voter's action — and MUST NOT require every voter to have acted. Reveal MUST NOT require an
 eligible numeric estimate either: a round whose only completed actions are `?` or Away SHALL still be
-revealable. Revealing SHALL switch the screen to its revealed state.
+revealable. Revealing SHALL switch the screen to its revealed state, and the control SHALL then be disabled
+while remaining visible, so revealing a round that is already revealed is never available as a user action.
+It SHALL become available again only after a reset, and then only once a voter has completed an action.
 
 #### Scenario: Reveal is unavailable on an untouched round
 
@@ -129,6 +131,12 @@ revealable. Revealing SHALL switch the screen to its revealed state.
 
 - **WHEN** `?` is chosen for the acting Business Analyst voter and no other voter has acted
 - **THEN** the Reveal control is enabled, although no numeric estimate has been given anywhere in the round
+
+#### Scenario: Reveal is unavailable once the cards are shown
+
+- **WHEN** `2d` is chosen for the acting QA voter, which enables the Reveal control, and the round is then
+  revealed with it
+- **THEN** the Reveal control is still present and is disabled, so it cannot be used a second time
 
 ### Requirement: Revealed Overall statistics
 

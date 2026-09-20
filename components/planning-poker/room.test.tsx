@@ -208,6 +208,19 @@ describe("Reveal becomes available after the first completed action", () => {
 
     expect(revealButton()).toBeEnabled();
   });
+
+  it("is disabled again once the cards are shown", () => {
+    render(<Room />);
+
+    selectVoter("Serhii Bondar");
+    chooseCard("2d");
+    expect(revealButton()).toBeEnabled();
+
+    reveal();
+
+    expect(revealButton()).toBeInTheDocument();
+    expect(revealButton()).toBeDisabled();
+  });
 });
 
 const reveal = () => fireEvent.click(revealButton());

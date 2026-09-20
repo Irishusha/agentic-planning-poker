@@ -13,9 +13,11 @@ const BUTTON_BASE =
 /**
  * The round's progress and its two controls.
  *
- * Reveal is present at all times and disabled only while every voter is still
- * Waiting — one completed action is enough, and it need not be a numeric
- * estimate. Reset stays available after a reveal so the round can be re-run.
+ * Reveal is present at all times: disabled while every voter is still Waiting —
+ * one completed action is enough, and it need not be a numeric estimate — and
+ * disabled again once the cards are shown, so a revealed round cannot be
+ * revealed a second time. Reset stays available after a reveal so the round can
+ * be re-run.
  */
 export function VoteStatus({
   completed,
@@ -44,7 +46,7 @@ export function VoteStatus({
         <button
           type="button"
           onClick={onReveal}
-          disabled={completed.n === 0}
+          disabled={revealed || completed.n === 0}
           className={`${BUTTON_BASE} bg-[#B07CFF] text-[#1A1024] shadow-[0_10px_30px_rgba(139,92,246,.28)] enabled:hover:bg-[#8B5CF6] disabled:cursor-not-allowed disabled:bg-[#2A2A35] disabled:text-[#7A7A8C] disabled:shadow-none`}
         >
           Reveal cards
