@@ -32,9 +32,10 @@ consumes it can reorder, extend or shorten it.
 A voter's round state SHALL be exactly one of: a numeric estimate, `?`, Away, or Waiting. Choosing SHALL
 replace the previous state rather than add to it: choosing a numeric card SHALL clear `?` and Away, choosing
 `?` SHALL clear a numeric estimate and Away, and switching Away on SHALL clear a numeric estimate and `?`.
-Choosing SHALL preserve the voter's role and SHALL change no other participant's state. An Observer has no
-deck and no Away toggle, so a choice directed at an Observer SHALL leave every participant unchanged and MUST
-NOT give the Observer a role, an estimate or an Away state.
+Choosing SHALL preserve the voter's role and SHALL change no other participant's state. Away is a toggle:
+switching it off for an Away voter SHALL return them to Waiting, the state they held before any choice. An
+Observer has no deck and no Away toggle, so a choice directed at an Observer SHALL leave every participant
+unchanged and MUST NOT give the Observer a role, an estimate or an Away state.
 
 #### Scenario: A waiting voter picks a numeric card
 
@@ -67,6 +68,11 @@ NOT give the Observer a role, an estimate or an Away state.
 
 - **WHEN** Away is switched on for a voter who holds `?`
 - **THEN** that voter is Away and no longer holds `?`
+
+#### Scenario: Switching Away off returns the voter to Waiting
+
+- **WHEN** the Away toggle is switched off for an Away voter whose role is `pm`
+- **THEN** that voter is Waiting with role `pm`, and holds neither a numeric estimate nor `?`
 
 #### Scenario: A choice directed at an Observer changes nothing
 

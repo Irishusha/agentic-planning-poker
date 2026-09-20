@@ -52,9 +52,10 @@ participant's round state.
 For the acting voter the screen SHALL offer the nine Hours deck cards `4h`, `1d`, `2d`, `3d`, `5d`, `8d`,
 `10d`, `14d` and `?`, and a separate Away toggle that sits outside the deck. Choosing SHALL replace the acting
 voter's previous state: a numeric card SHALL clear `?` and Away, `?` SHALL clear a numeric card and Away, and
-Away SHALL clear a numeric card and `?`. The screen SHALL show which card the acting voter currently holds, so
-the operator can see their own choice, and that indication is the acting voter's own state, not another
-participant's revealed value.
+Away SHALL clear a numeric card and `?`. The Away control is a toggle: switching it off for an Away voter
+SHALL return them to `Waiting` and SHALL reduce the completed count accordingly. The screen SHALL show which
+card the acting voter currently holds and whether Away is on, so the operator can see their own choice, and
+that indication is the acting voter's own state, not another participant's revealed value.
 
 #### Scenario: A numeric card replaces an earlier one
 
@@ -72,6 +73,12 @@ participant's revealed value.
 
 - **WHEN** the Away toggle is switched on for the acting QA voter and `2d` is then chosen
 - **THEN** `2d` is shown as that voter's current choice and their status is no longer `Away`
+
+#### Scenario: Switching Away off returns the voter to Waiting
+
+- **WHEN** the Away toggle is switched on and then off again for the acting QA voter
+- **THEN** that voter's status is `Waiting`, no card is shown as their current choice, and the progress status
+  reads `0 of 6 voted`
 
 ### Requirement: Estimates stay hidden until Reveal
 
