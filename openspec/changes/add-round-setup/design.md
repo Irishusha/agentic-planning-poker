@@ -115,13 +115,25 @@ after Acting-as, and it disappears at Stage 3 together with it. The field shapes
 design: a name input, a select, and Observer as a choice within that select rather than a separate toggle —
 one control per participant instead of §4.1's two, because a per-row toggle card would dominate the list.
 
+### The requirement is renamed, not left misleading
+
+The canonical requirement's title — "The room opens on a fixed task and a seeded roster" — names the two rules
+this change retires, so leaving it in place would archive a spec whose title contradicts its body. The delta
+therefore carries both a `## RENAMED Requirements` block and a `## MODIFIED Requirements` block.
+
+The pinned CLI supports that pair, verified in its own source rather than assumed:
+`node_modules/@fission-ai/openspec/dist/core/specs-apply.js:266` states the application order —
+`RENAMED → REMOVED → MODIFIED → ADDED` — so the rename lands before the modification, and `:178` *requires*
+`MODIFIED` to reference the new header when a rename exists, throwing otherwise. The delta follows that
+contract: `MODIFIED` is written under the new title, and every pre-existing scenario of the requirement is
+preserved, which the validator independently enforces (it rejects a `MODIFIED` block that drops one, resolving
+the lookup through the rename).
+
+After archive the canonical requirement reads **"The round opens with the configured task and roster"**, with
+its body describing the configured task and roster and the no-editing rule scoped to the started round.
+
 ## Risks / Trade-offs
 
-- **The canonical requirement keeps a now-inaccurate name.** The change modifies
-  "The room opens on a fixed task and a seeded roster", whose body no longer mandates a fixed task or a seeded
-  roster. `MODIFIED` cannot rename, and combining it with a `RENAMED` delta has ordering semantics this change
-  did not verify. → The body opens by stating what it replaces, so a reader is not misled; a later change can
-  rename it with a standalone `RENAMED` delta.
 - **Two scenario names in that requirement are now loose fits.** The validator requires a `MODIFIED` block to
   keep every existing scenario name, so "The room as it opens" now describes the round screen opening at
   Start. → Read that way it is still accurate, and the body says so explicitly.

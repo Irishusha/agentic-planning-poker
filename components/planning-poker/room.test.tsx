@@ -75,7 +75,12 @@ describe("the room opens on a fixed task and a seeded roster", () => {
     renderRound();
 
     expect(screen.queryByRole("button", { name: /edit|compose|clear task/i })).toBeNull();
+    // No task editor, and no roster editor either: the round freezes both.
     expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.queryByLabelText("Task title")).toBeNull();
+    expect(screen.queryByLabelText("Task description")).toBeNull();
+    expect(screen.queryByRole("button", { name: /add participant/i })).toBeNull();
+    expect(screen.queryAllByRole("button", { name: /^Remove/i })).toHaveLength(0);
   });
 });
 

@@ -118,8 +118,11 @@ describe("starting hands the configured task to the round", () => {
     type(descriptionField(), "  Rows are matched by email.  ");
     start();
 
-    expect(screen.getByText("Estimate the CSV import")).toBeInTheDocument();
-    expect(screen.getByText("Rows are matched by email.")).toBeInTheDocument();
+    // Exact raw text: RTL would match the untrimmed strings just as happily.
+    expect(exactTextOf(/Estimate the CSV import/)).toBe("Estimate the CSV import");
+    expect(exactTextOf(/Rows are matched by email\./)).toBe(
+      "Rows are matched by email.",
+    );
     expect(screen.queryByText(/Bulk import of candidates from CSV/)).toBeNull();
     expect(screen.queryByText(/Recruiter uploads a CSV/)).toBeNull();
   });
@@ -168,6 +171,33 @@ const groupHeadings = () =>
 const rowFor = (name: string) =>
   participantsRegion().getByText(name).closest("li");
 
+/** The block a role heading introduces, so membership can be asserted per group. */
+const groupFor = (label: string) =>
+  participantsRegion()
+    .getAllByRole("heading", { level: 3 })
+    .find((heading) => heading.textContent === label)
+    ?.closest("div") ?? null;
+
+/**
+ * The names listed under one role, read as raw text.
+ *
+ * RTL's matchers normalise whitespace, so `getByText("Ivan Petrenko")` would
+ * also match an untrimmed `"  Ivan Petrenko  "`. Reading `textContent` keeps a
+ * trimming regression visible.
+ */
+const namesIn = (label: string) => {
+  const group = groupFor(label);
+
+  return group === null
+    ? []
+    : within(group)
+        .getAllByRole("listitem")
+        .map((item) => item.querySelector("span")?.textContent ?? "");
+};
+
+/** Finds an element by a loose matcher, then asserts its exact, raw text. */
+const exactTextOf = (matcher: RegExp) => screen.getByText(matcher).textContent;
+
 describe("the operator builds the roster", () => {
   it("adds a participant with a name and a role", () => {
     render(<Room />);
@@ -177,8 +207,12 @@ describe("the operator builds the roster", () => {
     fireEvent.change(partSelect("Ivan Petrenko"), { target: { value: "frontend" } });
     start();
 
+    // Inside the Frontend group, not merely somewhere on screen: the prefilled
+    // Olena Shevchuk already makes a "Frontend heading exists" check pass.
+    expect(namesIn("Frontend")).toEqual(["Olena Shevchuk", "Ivan Petrenko"]);
+    expect(namesIn("QA")).toEqual(["Serhii Bondar"]);
+    expect(participantsRegion().getAllByRole("listitem")).toHaveLength(8);
     expect(rowFor("Ivan Petrenko")).toHaveTextContent("Waiting");
-    expect(groupHeadings()).toContain("Frontend");
   });
 
   it("renames a participant", () => {
@@ -229,7 +263,11 @@ describe("the operator builds the roster", () => {
     fireEvent.change(partSelect("Ivan Petrenko"), { target: { value: "pm" } });
     start();
 
-    expect(rowFor("Ivan Petrenko")).toBeInTheDocument();
+    // Raw text, so an untrimmed "  Ivan Petrenko  " cannot satisfy this.
+    expect(namesIn("PM")).toEqual(["Anna Kovalenko", "Ivan Petrenko"]);
+    expect(participantsRegion().getByText(/Ivan Petrenko/).textContent).toBe(
+      "Ivan Petrenko",
+    );
   });
 });
 
@@ -344,11 +382,21 @@ describe("a custom roster reaches the round and its statistics", () => {
       fireEvent.click(removeButton(name));
     }
     type(titleField(), "Estimate the CSV import");
+    type(descriptionField(), "Rows are matched by email.");
     start();
+
+    expect(exactTextOf(/Estimate the CSV import/)).toBe("Estimate the CSV import");
+    expect(exactTextOf(/Rows are matched by email\./)).toBe(
+      "Rows are matched by email.",
+    );
+    expect(screen.queryByText(/Bulk import of candidates from CSV/)).toBeNull();
+    expect(screen.queryByText(/Recruiter uploads a CSV/)).toBeNull();
 
     expect(screen.getByText(/\d+ of \d+ voted/)).toHaveTextContent("0 of 2 voted");
     expect(screen.getByLabelText("Acting as")).toHaveDisplayValue("Serhii Bondar");
     expect(groupHeadings()).toEqual(["QA", "Backend"]);
+    expect(rowFor("Serhii Bondar")).toHaveTextContent("Waiting");
+    expect(rowFor("Dmytro Levchenko")).toHaveTextContent("Waiting");
 
     // Serhii 2d = 16h, Dmytro 5d = 40h: mean 56/2 = 28h -> 3.5d, spread 24h -> 3d.
     fireEvent.click(screen.getByRole("button", { name: "2d" }));
