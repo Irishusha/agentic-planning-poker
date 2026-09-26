@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/Irishusha/agentic-planning-poker/actions/workflows/ci.yml/badge.svg)](https://github.com/Irishusha/agentic-planning-poker/actions/workflows/ci.yml)
 
+**Live demo: [agentic-planning-poker.vercel.app](https://agentic-planning-poker.vercel.app/)**
+
 A team estimation tool where every participant carries a role — **QA**, **Backend**, **Frontend**,
 **Business Analyst** or **PM** — and results are reported **per role as well as overall**.
 
@@ -99,6 +101,9 @@ network traffic: reloading the page discards the configured task and roster. One
 participant from a single screen through an "Acting as" selector, which exists only because the round has to
 be demonstrable on one device — it has no equivalent in the product being described.
 
+The public [deployment](#deployment) does not change this: it serves the same single-browser app and adds no
+persistence, no authentication, no shared rooms and no multi-client synchronisation.
+
 ## Future work
 
 Not built, and deliberately out of scope for this stage:
@@ -158,6 +163,13 @@ The first published run was a
 [successful CI run](https://github.com/Irishusha/agentic-planning-poker/actions/runs/36240788635): it passed
 dependency installation with the frozen lockfile, `pnpm check` and `pnpm build`.
 
+## Deployment
+
+The app is hosted on Vercel at <https://agentic-planning-poker.vercel.app/>. Every push to `main` creates a
+new production deployment. The deployed app is the same local-only round described in
+[Local-only](#local-only): it adds no persistence, authentication, shared rooms or multi-client
+synchronisation.
+
 ## Tests
 
 **128 tests across 9 files**, all passing.
@@ -206,6 +218,6 @@ had not.
 **In scope:** a single-browser, local-only round on the Hours scale, with role-segmented statistics.
 
 **Not in this repository:** no backend, database or persistence; no authentication; no rooms, room links or
-multi-client real-time synchronisation; no import or export; no AI features; no Fibonacci or T-shirt scales;
-no deployment target. The quality gates described above run locally and in
-[continuous integration](#continuous-integration).
+multi-client real-time synchronisation; no import or export; no AI features; no Fibonacci or T-shirt scales.
+The app is [deployed](#deployment) to Vercel as a public demo, and the quality gates described above run
+locally and in [continuous integration](#continuous-integration).

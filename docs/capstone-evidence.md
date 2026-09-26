@@ -65,6 +65,7 @@ command, so the rule holds even when an agent ignores it.
 | [`scripts/hooks-selftest.mjs`](../scripts/hooks-selftest.mjs) | asserts the repository's own hooks still behave |
 | `lib/**`, `components/**` | **128 tests across 9 files**, all passing |
 | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | the reproducible remote gate: on every push to `main` and every pull request targeting `main`, `pnpm install --frozen-lockfile`, then `pnpm check` and `pnpm build` |
+| Deployment: <https://agentic-planning-poker.vercel.app/> | the public Vercel production deployment, checked by a **human production walkthrough** — see [Production walkthrough](#production-walkthrough) below |
 | [`0a8e2e7`](https://github.com/Irishusha/agentic-planning-poker/commit/0a8e2e7a3f74a54fec5abb1036f193e63b9b8fb5) docs: record the next-task manual walkthrough | a **human browser and keyboard walkthrough** whose observations are recorded in the commit body — the control row after Reveal, Reset keeping task and Acting-as, the preserved roster and cleared task, and Tab skipping the disabled Reveal before reaching Reset votes and Next task, with focus landing in Task title |
 
 **Red-to-green chain.**
@@ -84,6 +85,28 @@ resulting failure before restoring the code.
 installed dependencies with the frozen lockfile, then executed `pnpm check` (9/9 Vitest test files,
 128/128 tests) and `pnpm build`. This is remote evidence that the gate reproduces on a clean machine; it
 shows the code is green, not that it was ever red. The red-to-green evidence is the commit history above.
+
+### Production walkthrough
+
+A person independently walked through the public production deployment at
+<https://agentic-planning-poker.vercel.app/> in a browser and observed:
+
+- setup loads without authentication or deployment protection;
+- Start round creates a hidden round;
+- selecting 2d enables Reveal;
+- Reveal shows Overall and QA statistics;
+- Reveal becomes disabled;
+- Next task returns to setup;
+- roster names, order and roles remain;
+- title and description are empty;
+- validation is visible;
+- Start round is disabled;
+- keyboard focus is in Task title.
+
+This is human-visible production evidence, separate from the other three kinds above: the automated
+Vitest/React Testing Library suite, the GitHub Actions gate, and the commit-based red-to-green chain. It shows
+the built app behaves as specified once deployed. It does not claim a backend, persistence, authentication or
+real-time rooms, none of which exist; the deployment serves the same single-browser, local-only round.
 
 ---
 
