@@ -64,6 +64,7 @@ command, so the rule holds even when an agent ignores it.
 | [`scripts/spec-check.mjs`](../scripts/spec-check.mjs) | fails on an empty spec tree, on an archived change with unfinished tasks, and on any bare `openspec` call — cases `openspec validate` alone lets through |
 | [`scripts/hooks-selftest.mjs`](../scripts/hooks-selftest.mjs) | asserts the repository's own hooks still behave |
 | `lib/**`, `components/**` | **128 tests across 9 files**, all passing |
+| [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | the reproducible remote gate: on every push to `main` and every pull request targeting `main`, `pnpm install --frozen-lockfile`, then `pnpm check` and `pnpm build` |
 | `0a8e2e7` docs: record the next-task manual walkthrough | a **human browser and keyboard walkthrough** whose observations are recorded in the commit body — the control row after Reveal, Reset keeping task and Acting-as, the preserved roster and cleared task, and Tab skipping the disabled Reveal before reaching Reset votes and Next task, with focus landing in Task title |
 
 **Red-to-green chain.**
@@ -78,7 +79,11 @@ red and a structural one (a missing import) was made explicit and held to. Later
 a *test* can fail: `4416066`, `231c309` and `a768c5f` each record a temporary mutation and quote the
 resulting failure before restoring the code.
 
-**Limitation.** Every gate runs locally. There is no continuous integration in this repository.
+**Remote gate.** The first published CI run,
+[run 36240788635](https://github.com/Irishusha/agentic-planning-poker/actions/runs/36240788635), passed: it
+installed dependencies with the frozen lockfile, then executed `pnpm check` (9/9 Vitest test files,
+128/128 tests) and `pnpm build`. This is remote evidence that the gate reproduces on a clean machine; it
+shows the code is green, not that it was ever red. The red-to-green evidence is the commit history above.
 
 ---
 

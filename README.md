@@ -1,5 +1,7 @@
 # Planning Poker
 
+[![CI](https://github.com/Irishusha/agentic-planning-poker/actions/workflows/ci.yml/badge.svg)](https://github.com/Irishusha/agentic-planning-poker/actions/workflows/ci.yml)
+
 A team estimation tool where every participant carries a role — **QA**, **Backend**, **Frontend**,
 **Business Analyst** or **PM** — and results are reported **per role as well as overall**.
 
@@ -151,6 +153,10 @@ and every pull request targeting `main`. It installs dependencies with `pnpm ins
 runs `pnpm check` and `pnpm build` as separate steps. Node.js comes from `.nvmrc`, and pnpm comes from the
 `packageManager` field in `package.json`. The workflow has read-only repository permissions and cancels a
 superseded run on the same ref.
+
+The first published run was a
+[successful CI run](https://github.com/Irishusha/agentic-planning-poker/actions/runs/36240788635): it passed
+dependency installation with the frozen lockfile, `pnpm check` and `pnpm build`.
 
 ## Tests
 
