@@ -116,6 +116,11 @@ pnpm. No other runtime dependencies.
 
 This project uses **pnpm**. A lockfile for another package manager will not be accepted.
 
+Prerequisites:
+
+- **Node.js 24.15.0**, as pinned in [`.nvmrc`](.nvmrc).
+- **pnpm** at the version pinned by the `packageManager` field in [`package.json`](package.json).
+
 ```bash
 pnpm install     # install dependencies
 pnpm dev         # start the dev server
@@ -138,6 +143,14 @@ One command, five gates, in order:
 Step 5 is stricter than `openspec validate` alone: [`scripts/spec-check.mjs`](scripts/spec-check.mjs) also
 fails on an empty spec tree, on an archived change with unfinished tasks, and on any bare `openspec` call in a
 generated file.
+
+## Continuous integration
+
+A GitHub Actions workflow, [`.github/workflows/ci.yml`](.github/workflows/ci.yml), runs on every push to `main`
+and every pull request targeting `main`. It installs dependencies with `pnpm install --frozen-lockfile`, then
+runs `pnpm check` and `pnpm build` as separate steps. Node.js comes from `.nvmrc`, and pnpm comes from the
+`packageManager` field in `package.json`. The workflow has read-only repository permissions and cancels a
+superseded run on the same ref.
 
 ## Tests
 
@@ -188,4 +201,5 @@ had not.
 
 **Not in this repository:** no backend, database or persistence; no authentication; no rooms, room links or
 multi-client real-time synchronisation; no import or export; no AI features; no Fibonacci or T-shirt scales;
-no deployment target and no continuous integration. Every quality gate described above is run locally.
+no deployment target. The quality gates described above run locally and in
+[continuous integration](#continuous-integration).
